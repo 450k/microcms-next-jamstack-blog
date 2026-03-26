@@ -55,11 +55,11 @@ img.logo{
 .container-event{
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1rem;
+  gap: 2rem;
 }
 
 .container-event > .card-item {
-  margin:2rem;
+  margin-bottom: 1rem;
 }
 
 .dataTable {
