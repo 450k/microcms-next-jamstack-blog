@@ -73,10 +73,6 @@ img.logo{
   text-align: right;
 }
 
-.dataTable-items{
-
-}
-
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -168,4 +164,10 @@ img.logo{
 
 .practice{
   @apply bg-indigo-100 text-gray-800;
+}
+
+.tennisoff-url-link {
+  a {
+    @apply text-cyan-700 hover:text-cyan-500;
+  }
 }

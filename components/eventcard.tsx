@@ -151,7 +151,7 @@ export function EventCard() {
                             <CardDescription>
                                 <div className='dataTable'>
                                     <div className='dataTable-subject'>開催日時：</div>
-                                    <div className='dataTable-items'>{formatDateShort!(post.eventDate)}　{post.eventStartTime} ～ {post.eventHour}時間</div>
+                                    <div className='dataTable-items'>{formatDateShort!(post.eventDate)}　{post.eventStartTime} ～　{post.eventHour}時間</div>
                                     <div className='dataTable-subject'> 場所：</div>
                                     <div className='dataTable-items'>{post.eventPlace?.[0]?.courtName} ({post.eventCourtSurface})</div>
                                     <div className='dataTable-subject'>募集人数：</div>
@@ -162,7 +162,7 @@ export function EventCard() {
                             </CardDescription>
                             <CardFooter>
                                 <Link href={`/event/${post.id}`}>
-                                    <Button className="w-full">詳細情報</Button>
+                                    <Button className="w-full bg-gray-800 hover:bg-gray-600">詳細情報</Button>
                                 </Link>
                             </CardFooter>
                         </Card>
