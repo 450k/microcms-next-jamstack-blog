@@ -16,8 +16,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-
 import { ArrowUpIcon, ArrowDownIcon } from "lucide-react"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group"
 
 import { useState, useEffect } from 'react';
 
@@ -52,24 +55,46 @@ type Props = {
 };
 
 
-export function Eventcard() {
+export function EventCard() {
     const [posts, setPosts] = useState<Props[]>([]);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
 
     useEffect(() => {
         const fetchPosts = async () => {
             try {
+                console.log('Fetching events from /api/events...');
                 const res = await fetch('/api/events');
+                console.log('Response status:', res.status, res.statusText);
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('API error response:', errorText);
+                    throw new Error(`API error: ${res.status} ${res.statusText}`);
+                }
+                
                 const data = await res.json();
+                console.log('Events fetched successfully:', data.length, 'items');
                 setPosts(data);
             } catch (error) {
-                console.error('failed to fetch events:', error);
+                console.error('Failed to fetch events:', error);
+                setPosts([]);
             }
         };
         fetchPosts();
     }, []);
 
-    const sortedPosts = [...posts].sort((a, b) => {
+    // カテゴリーの一意なリストを取得
+    const uniqueCategories = Array.from(
+        new Map(posts.map(post => [post.eventCategory.id, post.eventCategory])).values()
+    );
+
+    // フィルタ済みのポストを取得
+    const filteredPosts = selectedCategory 
+        ? posts.filter(post => post.eventCategory.id === selectedCategory)
+        : posts;
+
+    const sortedPosts = [...filteredPosts].sort((a, b) => {
         const dateA = new Date(a.eventDate);
         const dateB = new Date(b.eventDate);
         return sortOrder === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
@@ -77,7 +102,32 @@ export function Eventcard() {
 
     return (
         <div>
-            <div className='text-right sortButton-container mb-4'>
+            <div className='flex justify-between sortButton-container mb-4'>
+                <div className="flex flex-col gap-4">
+                    <ToggleGroup 
+                        className='category-filter' 
+                        type="single" 
+                        value={selectedCategory}
+                        onValueChange={setSelectedCategory}
+                        variant="outline"
+                    >
+                        <ToggleGroupItem 
+                            value="" 
+                            aria-label="すべて"
+                        >
+                            All
+                        </ToggleGroupItem>
+                        {uniqueCategories.map((category) => (
+                            <ToggleGroupItem 
+                                key={category.id} 
+                                value={category.id} 
+                                aria-label={category.name}
+                            >
+                                {category.name}
+                            </ToggleGroupItem>
+                        ))}
+                    </ToggleGroup>
+                </div>
                 <Button variant="outline" size="icon" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
                      {sortOrder === 'asc' ? <ArrowUpIcon /> : <ArrowDownIcon />}
                 </Button>
@@ -94,7 +144,7 @@ export function Eventcard() {
                             />
                             <CardHeader>
                                 <CardAction>
-                                    <Badge variant="secondary">{post.eventCategory?.name}</Badge>
+                                    <Badge variant="secondary" className={post.eventCategory?.id}>{post.eventCategory?.name}</Badge>
                                 </CardAction>
                                 <CardTitle>{formatDateShort(post.eventDate)} <span>({formatDay(post.eventDate)})</span> {post.eventStartTime} {post.eventTitle}</CardTitle>
                             </CardHeader>

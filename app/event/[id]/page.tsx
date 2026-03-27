@@ -64,7 +64,7 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
         <Link href="/">← Back to all Events</Link>
       </Button>
       
-      <h1 className="mb-4 text-4xl font-bold">{formatDateShort(post.eventDate)} ({formatDay(post.eventDate)})  {post.eventStartTime} ～ {post.eventTitle} <span><Badge variant="secondary">{post.eventCategory?.name}</Badge></span></h1>
+      <h1 className="mb-4 text-4xl font-bold">{formatDateShort(post.eventDate)} ({formatDay(post.eventDate)})  {post.eventStartTime} ～ {post.eventTitle} <span><Badge variant="secondary" className={post.eventCategory?.id}>{post.eventCategory?.name}</Badge></span></h1>
 
       <div className="prose max-w-none">
         <table className="w-full border-collapse mb-8">

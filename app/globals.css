@@ -157,3 +157,15 @@ img.logo{
     @apply font-sans;
   }
 }
+
+ .singles{
+  @apply bg-amber-100 text-gray-800;
+}
+
+.doubles{
+  @apply bg-emerald-100 text-gray-800;
+}
+
+.practice{
+  @apply bg-indigo-100 text-gray-800;
+}
