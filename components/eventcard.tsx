@@ -1,8 +1,8 @@
 "use client";
 
 import Link from 'next/link';
-import { formatDate,formatDay,formatDateShort } from "@/lib/utils";
-
+import { formatDate, formatDay, formatDateShort } from "@/lib/utils";
+import type { EventListItem } from "@/lib/types";
 
 // shad cn のパーツをインポート
 import { Badge } from "@/components/ui/badge"
@@ -24,39 +24,9 @@ import {
 
 import { useState, useEffect } from 'react';
 
-type EventPlace = {
-  id: string;
-  courtName: string;
-  thumbnail_img: {
-    url: string;
-    height: number;
-    width: number;
-  };
-};
-
-type EventCategory = {
-  id: string;
-  name: string;
-};
-
-// ブログ記事の型定義
-type Props = {
-  id: string;
-  eventTitle: string;
-  eventDate: string;
-  eventPlace: EventPlace[];
-  eventStartTime: string;
-  eventHour: string;
-  eventMemberNum: string;
-  member: string[];
-  eventCategory:  EventCategory;
-  eventCourtNum: string;
-  eventCourtSurface: string;
-};
-
 
 export function EventCard() {
-    const [posts, setPosts] = useState<Props[]>([]);
+    const [posts, setPosts] = useState<EventListItem[]>([]);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [selectedCategory, setSelectedCategory] = useState<string>('');
 
@@ -161,7 +131,7 @@ export function EventCard() {
                                 </div>
                             </CardDescription>
                             <CardFooter>
-                                <Link href={`/event/${post.id}`}>
+                                <Link href={`/events/${post.id}`}>
                                     <Button className="w-full bg-gray-800 hover:bg-gray-600">詳細情報</Button>
                                 </Link>
                             </CardFooter>

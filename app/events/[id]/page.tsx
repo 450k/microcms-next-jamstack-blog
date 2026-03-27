@@ -2,50 +2,14 @@ import { client } from "@/lib/microcms"
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { formatDate,formatDay,formatDateShort } from "@/lib/utils";
+import { formatDate, formatDay, formatDateShort } from "@/lib/utils";
 import { JoinMember } from '@/components/joinmembers';
 import { TennisOffUrl } from "@/components/tennisoff-url";
 import { AnnotationText } from "@/components/annotation_text";
-
-type EventCategory = {
-  id: string;
-  name: string;
-};
-
-type EventPlace = {
-  id: string;
-  courtName: string;
-  thumbnail_img: {
-    url: string;
-    height: number;
-    width: number;
-  };
-};
-
-// ブログ記事の型定義
-type Props = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  revisedAt: string;
-  eventTitle: string;
-  eventCategory: EventCategory;
-  eventDate: string;
-  eventStartTime: string;
-  eventHour: string;
-  eventPlace: EventPlace[];
-  eventMemberNum: number;
-  eventCourtNum: number;
-  eventCourtSurface: string;
-  eventPrice: number;
-  eventContent: string;
-  member: string[];
-  tennisOffUrl: string;
-};
+import type { EventDetail } from "@/lib/types";
 
 // microCMSから特定の記事を取得
-async function getEventPost(id: string): Promise<Props> {
+async function getEventPost(id: string): Promise<EventDetail> {
   const data = await client.get({
     endpoint: 'event', 
     contentId: id,
@@ -64,7 +28,12 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
         <Link href="/">← Back to all Events</Link>
       </Button>
       
-      <h1 className="mb-4 text-4xl font-bold">{formatDateShort(post.eventDate)} ({formatDay(post.eventDate)})  {post.eventStartTime} ～ {post.eventTitle} <span><Badge variant="secondary" className={post.eventCategory?.id}>{post.eventCategory?.name}</Badge></span></h1>
+      <h1 className="mb-4 text-4xl font-bold">
+        {formatDateShort(post.eventDate)} ({formatDay(post.eventDate)})  {post.eventStartTime} ～ {post.eventTitle}
+        <span>
+          <Badge variant="secondary" className={post.eventCategory?.id}>{post.eventCategory?.name}</Badge>
+        </span>
+      </h1>
 
       <div className="prose max-w-none">
         <table className="w-full border-collapse mb-8">
@@ -98,12 +67,12 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
 
         {post.eventContent && (
           <div>
-          <h3 className="scroll-m-20 border-b pb-2 text-xl font-semibold tracking-tight first:mt-0">備考</h3>
-          <div className="mb-8"
-            dangerouslySetInnerHTML={{
-              __html: post.eventContent,
-            }}
-          />
+            <h3 className="scroll-m-20 border-b pb-2 text-xl font-semibold tracking-tight first:mt-0">備考</h3>
+            <div className="mb-8"
+              dangerouslySetInnerHTML={{
+                __html: post.eventContent,
+              }}
+            />
           </div>
         )}
       </div>
@@ -112,7 +81,6 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
       {post.tennisOffUrl && <TennisOffUrl tennisOffUrl={post.tennisOffUrl} />}
       <AnnotationText />
     </article>
-    
   );
 }
 
@@ -121,10 +89,6 @@ export async function generateStaticParams() {
   const contentIds = await client.getAllContentIds({ endpoint: 'event' });
 
   return contentIds.map((contentId) => ({
-    id: contentId, // 各記事のIDをパラメータとして返す
+    id: contentId,
   }));
 }
-
-
-
-// ----------------------------------------------------------------------------
