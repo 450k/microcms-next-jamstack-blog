@@ -130,10 +130,18 @@ export function EventCard() {
                                     {/* <div className='dataTable-items'>{post.member}</div> */}
                                 </div>
                             </CardDescription>
-                            <CardFooter>
+                            <CardFooter className='flex justify-between'>
                                 <Link href={`/events/${post.id}`}>
                                     <Button className="w-full bg-gray-800 hover:bg-gray-600">詳細情報</Button>
                                 </Link>
+                                <div className='entryCounter font-bold text-olive-700'>
+                                  {(() => {
+                                    const memberCount = post.member?.length || 0;
+                                    const maxMembers = Number(post.eventMemberNum);
+                                    const remaining = maxMembers - memberCount;
+                                    return remaining <= 0 ? '✅ 満員御礼!!' : `${remaining}名募集中！`;
+                                  })()}
+                                </div>
                             </CardFooter>
                         </Card>
                 );
