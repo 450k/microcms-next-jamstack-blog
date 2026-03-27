@@ -6,6 +6,7 @@ import { formatDate, formatDay, formatDateShort } from "@/lib/utils";
 import { JoinMember } from '@/components/joinmembers';
 import { TennisOffUrl } from "@/components/tennisoff-url";
 import { AnnotationText } from "@/components/annotation_text";
+import { EventPagination } from "@/components/event-pagination";
 import type { EventDetail } from "@/lib/types";
 
 // microCMSから特定の記事を取得
@@ -17,20 +18,45 @@ async function getEventPost(id: string): Promise<EventDetail> {
   return data;
 }
 
+// 全イベントを日付でソートして取得
+async function getAllEventsSorted(): Promise<EventDetail[]> {
+  const data = await client.get({
+    endpoint: 'event',
+    queries: {
+      orders: 'eventDate',
+      limit: 100,
+    },
+  });
+  return data.contents;
+}
+
+// 前後のイベントを取得
+async function getAdjacentEvents(currentId: string) {
+  const allEvents = await getAllEventsSorted();
+  const currentIndex = allEvents.findIndex(event => event.id === currentId);
+  
+  return {
+    prevEvent: currentIndex > 0 ? allEvents[currentIndex - 1] : null,
+    nextEvent: currentIndex < allEvents.length - 1 ? allEvents[currentIndex + 1] : null,
+  };
+}
+
 // 記事詳細ページの生成
 export default async function EventPostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params; // IDを取得
   const post = await getEventPost(id);
+  const { prevEvent, nextEvent } = await getAdjacentEvents(id);
 
   return (
+    <>
     <article className="mx-auto max-w-3xl">
       <Button asChild className="mb-4">
         <Link href="/">← Back to all Events</Link>
       </Button>
       
       <h1 className="mb-4 text-4xl font-bold">
-        {formatDateShort(post.eventDate)} ({formatDay(post.eventDate)})  {post.eventStartTime} ～ {post.eventTitle}
-        <span>
+        {formatDateShort(post.eventDate)} <span className="text-2xl">({formatDay(post.eventDate)})</span>  {post.eventStartTime} ～ {post.eventTitle}
+        <span className="ml-4">
           <Badge variant="secondary" className={post.eventCategory?.id}>{post.eventCategory?.name}</Badge>
         </span>
       </h1>
@@ -81,6 +107,9 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
       {post.tennisOffUrl && <TennisOffUrl tennisOffUrl={post.tennisOffUrl} />}
       <AnnotationText />
     </article>
+    
+    <EventPagination prevEvent={prevEvent} nextEvent={nextEvent} />
+    </>
   );
 }
 
