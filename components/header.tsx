@@ -22,12 +22,12 @@ export function Header() {
                         </Link>
                         <p>練習会スケジュール</p>
                 </div>
-                <form className="mx-4 max-w-sm flex-1">
+                {/* <form className="mx-4 max-w-sm flex-1">
                 <div className="flex w-full max-w-sm items-center space-x-2">
                     <Input type="text" placeholder="キーワードを入力..." />
                     <Button type="submit">検索</Button>
                 </div>
-                </form>
+                </form> */}
             </div>
         </header>
     )
