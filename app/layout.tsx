@@ -16,6 +16,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "TTC 練習会スケジュール",
   description: "確保できているテニスコート、練習予定を掲載します。",
+  icons: {
+    icon: '/img/shortcutIcon.png',
+    apple: '/img/shortcutIcon.png',
+  },
 };
 
 export default function RootLayout({
