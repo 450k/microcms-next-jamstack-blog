@@ -1,6 +1,26 @@
 import { EventCard } from '@/components/eventcard';
+import { NewsItems } from '@/components/newsList';
+import { client } from '@/lib/microcms';
+import type { NewsItem } from '@/lib/types';
+
+// ニュースデータを取得
+async function getNews(): Promise<NewsItem[]> {
+  try {
+    const data = await client.get({
+      endpoint: 'news',
+      queries: {
+        limit: 10,
+      },
+    });
+    return data.contents as NewsItem[];
+  } catch (error) {
+    console.error('Failed to fetch news:', error);
+    return [];
+  }
+}
 
 export default async function Home() {
+  const newsItems = await getNews();
   return (
     <>
       <h2 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance mb-6">
@@ -9,6 +29,7 @@ export default async function Home() {
     <h3 className="scroll-m-20 text-center text-lg font-medium tracking-tight mb-8 ">
       参加希望あれば連絡ください。
     </h3>
+      <NewsItems newsItems={newsItems} />
       <EventCard />
     </>
   );
