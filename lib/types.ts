@@ -15,18 +15,29 @@ export type EventPlace = {
   };
 };
 
+export type EventMember = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+  revisedAt: string;
+  userID: number;
+  userNickname: string;
+  useName: string;
+};
+
 // イベント一覧表示用の型
 export type EventListItem = {
   id: string;
   eventTitle: string;
   eventDate: string;
-  eventPlace: EventPlace[];
-  eventStartTime: string;
+  eventPlace: EventPlace;
+  eventStartTime: string[];
   eventHour: string;
   eventMemberNum: string;
-  member: string[];
-  eventCategory: EventCategory;
-  eventCourtNum: string;
+  member: EventMember[];
+  eventCategory: string[];
+  eventCourtNum: string[];
   eventCourtSurface: string;
 };
 
@@ -37,7 +48,16 @@ export type EventDetail = EventListItem & {
   publishedAt: string;
   revisedAt: string;
   eventContent: string;
-  eventCourtSurface: string;
   eventPrice: number;
   tennisOffUrl: string;
+};
+
+
+export type NewsItem = {
+  id: string;
+  createdAt: string;
+  publishedAt: string;
+  newsTitle: string;
+  newsContent?: string;
+  linkTo?: string;
 };

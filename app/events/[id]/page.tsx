@@ -1,5 +1,4 @@
 import { client } from "@/lib/microcms"
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { formatDate, formatDay, formatDateShort } from "@/lib/utils";
@@ -7,6 +6,7 @@ import { JoinMember } from '@/components/joinmembers';
 import { TennisOffUrl } from "@/components/tennisoff-url";
 import { AnnotationText } from "@/components/annotation_text";
 import { EventPagination } from "@/components/event-pagination";
+import { CategoryBadge } from '@/components/category-badge';
 import type { EventDetail } from "@/lib/types";
 
 // microCMSから特定の記事を取得
@@ -57,7 +57,7 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
       <h1 className="mb-4 text-4xl font-bold">
         {formatDateShort(post.eventDate)} <span className="text-2xl">({formatDay(post.eventDate)})</span>  {post.eventStartTime} ～ {post.eventTitle}
         <span className="ml-4">
-          <Badge variant="secondary" className={post.eventCategory?.id}>{post.eventCategory?.name}</Badge>
+          <CategoryBadge category={post.eventCategory?.[0]} />
         </span>
       </h1>
 
@@ -72,7 +72,7 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
             </tr>
             <tr>
               <th className="border p-2 bg-gray-100 text-left">場所</th>
-              <td className="border p-2">{post.eventPlace?.[0]?.courtName}</td>
+              <td className="border p-2">{post.eventPlace?.courtName}</td>
             </tr>
             <tr>
               <th className="border p-2 bg-gray-100 text-left">サーフェス</th>
