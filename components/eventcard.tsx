@@ -149,7 +149,7 @@ export function EventCard() {
                                     <div className='dataTable-subject'>開催日時：</div>
                                     <div className='dataTable-items'>{formatDateShort!(post.eventDate)}　{post.eventStartTime} ～　{post.eventHour}時間</div>
                                     <div className='dataTable-subject'> 場所：</div>
-                                    <div className='dataTable-items'>{post.eventPlace?.courtName} ({post.eventCourtSurface})</div>
+                                    <div className='dataTable-items'>{post.eventPlace?.courtName} </div>
                                     <div className='dataTable-subject'>募集人数：</div>
                                     <div className='dataTable-items'>{post.eventMemberNum} 名</div>
                                     {/* <div className='dataTable-subject'>参加者：</div> */}
