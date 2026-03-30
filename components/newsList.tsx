@@ -20,8 +20,8 @@ export function NewsItems({ newsItems = [] }: Props) {
         {newsItems.map((news) => (
           <li key={news.id} className="py-4 ">
             <div className="grid auto-cols-max grid-flow-col gap-4">
-              <span className="font-medium">{formatDate(news.publishedAt)}</span>
-              <span className="font-normal line-clamp-2">📢 {news.newsTitle}</span>
+              <span className="font-medium">📢 {formatDate(news.publishedAt)}</span>
+              <span className="font-normal line-clamp-2">{news.newsTitle}</span>
               {news.linkTo && (
                 <a href={news.linkTo} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline text-sm self-start">
                   詳細 →
