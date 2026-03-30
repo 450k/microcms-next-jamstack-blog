@@ -9,6 +9,9 @@ import { EventPagination } from "@/components/event-pagination";
 import { CategoryBadge } from '@/components/category-badge';
 import type { EventDetail } from "@/lib/types";
 
+import { EntryForm } from '@/components/entry-form';
+import { EntryList } from '@/components/entry-list';
+
 // microCMSから特定の記事を取得
 async function getEventPost(id: string): Promise<EventDetail> {
   const data = await client.get({
@@ -103,8 +106,13 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
         )}
       </div>
       
-      {post.member?.length > 0 && <JoinMember member={post.member} />}
+      {/* {post.member?.length > 0 && <JoinMember member={post.member} />} */}
       {post.tennisOffUrl && <TennisOffUrl tennisOffUrl={post.tennisOffUrl} />}
+      
+      <EntryList eventId={post.id} />
+      <EntryForm eventId={post.id} eventTitle={post.eventTitle} />
+      
+
       <AnnotationText />
     </article>
     

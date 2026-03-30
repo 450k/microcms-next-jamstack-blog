@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { formatDate, formatDay, formatDateShort } from "@/lib/utils";
 import type { EventListItem } from "@/lib/types";
 import { CategoryBadge } from '@/components/category-badge';
+import { supabase } from '@/lib/supabase';
 
 // shad cn のパーツをインポート
 import { Badge } from "@/components/ui/badge"
@@ -30,6 +31,7 @@ export function EventCard() {
     const [posts, setPosts] = useState<EventListItem[]>([]);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [entryCounts, setEntryCounts] = useState<{ [key: string]: number }>({});
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -70,6 +72,31 @@ export function EventCard() {
         };
         fetchPosts();
     }, []);
+
+    // Supabaseから各イベントの参加者数を取得
+    useEffect(() => {
+        const fetchEntryCounts = async () => {
+            if (posts.length === 0) return;
+            
+            const counts: { [key: string]: number } = {};
+            for (const post of posts) {
+                try {
+                    const { count } = await supabase
+                        .from('entries')
+                        .select('*', { count: 'exact', head: true })
+                        .eq('event_id', post.id)
+                        .eq('cancelled', false);
+                    counts[post.id] = count || 0;
+                } catch (error) {
+                    console.error(`Failed to fetch entries for event ${post.id}:`, error);
+                    counts[post.id] = 0;
+                }
+            }
+            setEntryCounts(counts);
+        };
+        
+        fetchEntryCounts();
+    }, [posts]);
 
     // カテゴリーの一意なリストを取得
     const uniqueCategories = Array.from(
@@ -162,7 +189,7 @@ export function EventCard() {
                                 </Link>
                                 <div className='entryCounter font-bold text-olive-700'>
                                   {(() => {
-                                    const memberCount = post.member?.length || 0;
+                                    const memberCount = entryCounts[post.id] || 0;
                                     const maxMembers = Number(post.eventMemberNum);
                                     const remaining = maxMembers - memberCount;
                                     return remaining <= 0 ? '✅ 満員御礼!!' : `あと${remaining}名！`;
