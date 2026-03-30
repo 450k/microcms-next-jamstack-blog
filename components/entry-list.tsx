@@ -47,8 +47,8 @@ export function EntryList({ eventId }: { eventId: string }) {
       ) : (
         <ul className="flex flex-col gap-2">
           {entries.map((entry) => (
-            <li key={entry.id} className="flex items-center justify-between border rounded p-2">
-              <span>{entry.name}</span>
+            <li key={entry.id} className="flex items-center justify-between px-2">
+              <span>✅ {entry.name}</span>
               {isAdmin && (
                 <Button
                   variant="outline"

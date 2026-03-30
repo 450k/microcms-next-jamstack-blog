@@ -40,7 +40,7 @@ export function EntryForm({ eventId, eventTitle }: Props) {
 
   return (
     <div className="flex flex-col gap-3 my-6">
-      <h3 className="text-xl font-semibold">参加エントリー</h3>
+      <h3 className="text-xl font-semibold">エントリー</h3>
       {error && <p className="text-red-500">{error}</p>}
       <input
         id="name"

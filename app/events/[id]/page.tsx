@@ -101,7 +101,7 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
               dangerouslySetInnerHTML={{
                 __html: post.eventContent,
               }}
-            />
+            ></div>
           </div>
         )}
       </div>
