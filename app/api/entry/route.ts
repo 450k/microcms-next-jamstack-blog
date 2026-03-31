@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
       messages: [
         {
           type: 'text',
-          text: `【参加申込】\n開催日: ${formatDate(eventDate)}\n開催時間: ${startTime}\nイベント: ${eventTitle}`,
+          text: `【参加申込】\n名前: ${name}\n開催日: ${formatDate(eventDate)}\n開催時間: ${startTime}\nイベント: ${eventTitle}`,
         },
       ],
     }),
