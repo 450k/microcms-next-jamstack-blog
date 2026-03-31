@@ -78,9 +78,9 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
               <td className="border p-2">{post.eventPlace?.courtName}</td>
             </tr>
             <tr>
-              <th className="border p-2 bg-gray-100 text-left">サーフェス</th>
+              <th className="border p-2 bg-gray-100 text-left">コート面数</th>
               <td className="border p-2">
-                {post.eventCourtSurface} （{post.eventCourtNum}面）
+                {post.eventCourtNum}面
               </td>
             </tr>
             <tr>
