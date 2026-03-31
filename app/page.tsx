@@ -14,7 +14,6 @@ async function getNews(): Promise<NewsItem[]> {
     });
     return data.contents as NewsItem[];
   } catch (error) {
-    console.error('Failed to fetch news:', error);
     return [];
   }
 }

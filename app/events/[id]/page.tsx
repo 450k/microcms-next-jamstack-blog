@@ -110,7 +110,13 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
       {post.tennisOffUrl && <TennisOffUrl tennisOffUrl={post.tennisOffUrl} />}
       
       <EntryList eventId={post.id} />
-      <EntryForm eventId={post.id} eventTitle={post.eventTitle} />
+      <EntryForm
+        eventId={post.id}
+        eventTitle={post.eventTitle}
+        maxMembers={Number(post.eventMemberNum)}
+        eventDate={post.eventDate}
+        eventStartTime={post.eventStartTime}
+/>
       
 
       <AnnotationText />
