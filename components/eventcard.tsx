@@ -36,37 +36,22 @@ export function EventCard() {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                console.log('[EventCard] Fetching events from /api/events...');
                 const res = await fetch('/api/events');
-                console.log('[EventCard] Response:', { status: res.status, statusText: res.statusText });
                 
                 if (!res.ok) {
                     const errorText = await res.text();
-                    console.error('[EventCard] API error response:', {
-                        status: res.status,
-                        statusText: res.statusText,
-                        contentType: res.headers.get('content-type'),
-                        bodyLength: errorText.length,
-                        bodyPreview: errorText.substring(0, 500)
-                    });
                     throw new Error(`API error: ${res.status} ${res.statusText}`);
                 }
                 
                 const contentType = res.headers.get('content-type');
                 if (!contentType?.includes('application/json')) {
                     const text = await res.text();
-                    console.error('[EventCard] Unexpected content type:', contentType, 'Body:', text.substring(0, 200));
                     throw new Error(`Unexpected content type: ${contentType}`);
                 }
                 
                 const data = await res.json();
-                console.log('[EventCard] Events fetched successfully:', data.length, 'items');
-                console.log('[EventCard] First event:', data[0]);
-                console.log('[EventCard] First event categories:', data[0]?.eventCategory);
-                console.log('[EventCard] All events:', data);
                 setPosts(data);
             } catch (error) {
-                console.error('[EventCard] Failed to fetch events:', error);
                 setPosts([]);
             }
         };
@@ -88,7 +73,6 @@ export function EventCard() {
                         .eq('cancelled', false);
                     counts[post.id] = count || 0;
                 } catch (error) {
-                    console.error(`Failed to fetch entries for event ${post.id}:`, error);
                     counts[post.id] = 0;
                 }
             }
