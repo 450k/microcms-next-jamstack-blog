@@ -2,6 +2,14 @@
 import { supabase } from '@/lib/supabase';
 import { LogoutButton } from '@/components/logout-button';
 
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+
 export default async function AdminPage() {
   const { data: entries } = await supabase
     .from('entries')
@@ -59,7 +67,7 @@ export default async function AdminPage() {
               <td className="border p-2">{entry.name}</td>
               <td className="border p-2">{entry.event_title}</td>
               <td className="border p-2">
-                {new Date(entry.created_at).toLocaleString('ja-JP')}
+                {dayjs(entry.created_at).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm')}
               </td>
             </tr>
           ))}
