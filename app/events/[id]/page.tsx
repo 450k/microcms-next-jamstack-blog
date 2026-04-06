@@ -116,7 +116,7 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
         maxMembers={Number(post.eventMemberNum)}
         eventDate={post.eventDate}
         startTime={post.eventStartTime}
-/>
+      />
       
 
       <AnnotationText />
