@@ -1,6 +1,6 @@
+// components/entry-form.tsx
 'use client';
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
 type Props = {
@@ -8,87 +8,51 @@ type Props = {
   eventTitle: string;
   maxMembers: number;
   eventDate: string;
-  eventStartTime: string | string[];
+  startTime: string | string[];
 };
 
-export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, eventStartTime }: Props) {
+export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTime }: Props) {
   const [name, setName] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [entryCount, setEntryCount] = useState(0);
+  const startTimeStr = Array.isArray(startTime) ? startTime[0] : startTime;
 
-  // ✅ 現在の参加者数を取得
-  useEffect(() => {
-    const fetchCount = async () => {
-      const { count } = await supabase
-        .from('entries')
-        .select('*', { count: 'exact', head: true })
-        .eq('event_id', eventId)
-        .eq('cancelled', false);
-      setEntryCount(count || 0);
-    };
-    fetchCount();
-  }, [eventId]);
-
-  const isFull = entryCount >= maxMembers; // ✅ 満員判定
-
-  // Supabase直接ではなくAPI経由に変更
-  const handleSubmit = async () => {
+  const handleLineLogin = () => {
     if (!name.trim()) {
       setError('お名前を入力してください');
       return;
     }
-    setLoading(true);
-    setError('');
-
-    const res = await fetch('/api/entry', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, eventId, eventTitle, eventDate, eventStartTime }),
+    // LINEログインページにリダイレクト
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id: process.env.NEXT_PUBLIC_LINE_LOGIN_CHANNEL_ID!,
+      redirect_uri: process.env.NEXT_PUBLIC_LINE_LOGIN_REDIRECT_URI!,
+      state: `${eventId}|${eventTitle}|${name}|${eventDate}|${Array.isArray(startTime) ? startTime[0] : startTime}`,
+      scope: 'profile',
     });
-
-    if (res.ok) {
-      setSubmitted(true);
-    } else {
-      setError('エントリーに失敗しました');
-    }
-    setLoading(false);
+    window.location.href = `https://access.line.me/oauth2/v2.1/authorize?${params}`;
   };
-
-  if (submitted) {
-    return (
-      <p className="text-green-600 font-semibold">✅ エントリーが完了しました！</p>
-    );
-  }
-
-  // ✅ 満員の場合はフォームを閉じる
-  if (isFull) {
-    return (
-      <div className="my-6">
-        <h3 className="text-xl font-semibold">エントリー</h3>
-        <p className="text-red-500 font-semibold mt-2">満員御礼！エントリーを締め切りました。</p>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col gap-3 my-6">
-      <h3 className="text-xl font-semibold">エントリー</h3>
-      <p className="text-sm text-gray-500">残り{maxMembers - entryCount}名</p>
+      <h3 className="text-xl font-semibold">エントリー<span className='font-normal text-sm text-red-500'>（※LINEエントリー）</span></h3>
       {error && <p className="text-red-500">{error}</p>}
       <input
         id="name"
         name="name"
         type="text"
-        placeholder="名前を入力"
+        placeholder="名前を入力　テニスオフID、LINE ID可"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="border rounded p-2"
       />
-      <Button onClick={handleSubmit} disabled={loading} className='btn-entry w-min bg-orange-500'>
-        {loading ? '送信中...' : 'エントリーする'}
+      {/* ✅ LINEログインボタン */}
+      <Button
+        onClick={handleLineLogin}
+        className="bg-green-500 hover:bg-green-600 text-white w-2xs h-12"
+      >
+        LINEでエントリー
       </Button>
     </div>
   );
 }
+

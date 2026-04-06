@@ -2,20 +2,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@/lib/microcms';
 import { supabase } from '@/lib/supabase';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 export async function GET(req: NextRequest) {
-  // ✅ Cronからのリクエストか確認
   const authHeader = req.headers.get('authorization');
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  // 明日の日付を取得
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD
+  // ✅ 日本時間で明日の日付を取得
+  const tomorrowStr = dayjs().tz('Asia/Tokyo').add(1, 'day').format('YYYY-MM-DD');
 
-  // microCMSから明日のイベントを取得
   const data = await client.get({
     endpoint: 'event',
     queries: {
@@ -24,39 +26,43 @@ export async function GET(req: NextRequest) {
     },
   });
 
-  const events = data.contents;
+  for (const event of data.contents) {
+    // ✅ 日本時間に変換
+    const formattedDate = dayjs(event.eventDate).tz('Asia/Tokyo').format('M/D');
+    const startTime = Array.isArray(event.eventStartTime)
+      ? event.eventStartTime[0]
+      : event.eventStartTime;
 
-  if (events.length === 0) {
-    return NextResponse.json({ message: '明日のイベントはありません' });
-  }
-
-  // 各イベントの参加者を取得してLINE通知
-  for (const event of events) {
     const { data: entries } = await supabase
       .from('entries')
-      .select('name')
+      .select('name, line_user_id')
       .eq('event_id', event.id)
       .eq('cancelled', false);
 
-    const memberNames = entries?.map((e) => e.name).join('、') || 'なし';
+    if (!entries || entries.length === 0) continue;
 
-    await fetch('https://api.line.me/v2/bot/message/push', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.LINE_ACCESS_TOKEN}`,
-      },
-      body: JSON.stringify({
-        to: process.env.LINE_USER_ID,
-        messages: [
-          {
-            type: 'text',
-            text: `【明日のイベントリマインダー】\n📅 ${event.eventTitle}\n🕐 ${event.eventStartTime}\n📍 ${event.eventPlace?.[0]?.courtName}\n👥 参加者：${memberNames}`,
-          },
-        ],
-      }),
-    });
+    for (const entry of entries) {
+      if (!entry.line_user_id) continue;
+
+      await fetch('https://api.line.me/v2/bot/message/push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.LINE_ACCESS_TOKEN}`,
+        },
+        body: JSON.stringify({
+          to: entry.line_user_id,
+          messages: [
+            {
+              type: 'text',
+              // ✅ 日本時間の日付を使用
+              text: `【リマインダー】\n${entry.name}さん、今週の練習会をお忘れなく！雨天の場合は1時間前までにお知らせします。\n\n📅 ${formattedDate} ${startTime} ${event.eventTitle}\n📍 ${event.eventPlace?.[0]?.courtName}`,
+            },
+          ],
+        }),
+      });
+    }
   }
 
-  return NextResponse.json({ message: `${events.length}件のリマインダーを送信しました` });
+  return NextResponse.json({ message: 'リマインダーを送信しました' });
 }
