@@ -22,6 +22,9 @@ export function Header() {
                         </Link>
                         <p className="font-medium">練習会スケジュール</p>
                 </div>
+                <div>
+                    <Link href="/h2h">対戦成績</Link>
+                </div>
                 {/* <form className="mx-4 max-w-sm flex-1">
                 <div className="flex w-full max-w-sm items-center space-x-2">
                     <Input type="text" placeholder="キーワードを入力..." />
