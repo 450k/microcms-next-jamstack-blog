@@ -50,6 +50,7 @@ export type EventDetail = EventListItem & {
   eventContent: string;
   eventPrice: number;
   tennisOffUrl: string;
+  entryDueDate: string;
 };
 
 
