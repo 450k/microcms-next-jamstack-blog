@@ -191,7 +191,7 @@ const playerRight = winsA >= winsB
       )}
     
     <Button asChild className="mt-8">
-        <Link href="/">← Back to all Events</Link>
+        <Link href="/">← TOPに戻る</Link>
       </Button>
     </div>
   );

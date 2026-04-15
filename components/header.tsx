@@ -15,12 +15,12 @@ export function Header() {
 
     return(
         <header className="border-b">
-            <div className="container mx-auto flex items-center justify-between px-3 py-2">
+            <div className="container mx-auto flex items-center justify-between px-2 py-1.5">
                     <div className="flex items-center justify-between">
                         <Link href="/" className="text-2xl font-bold">
                             <img className="logo" src="/img/ttc_type3.png" alt="ttc" />
                         </Link>
-                        <p className="font-medium ml-2">練習会スケジュール</p>
+                        <p className="font-medium ml-1">練習会スケジュール</p>
                 </div>
                 {/* <div className="text-sm">
                     < Button variant="outline" className="px-2 py-1">
