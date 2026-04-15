@@ -1,7 +1,7 @@
 import { client } from "@/lib/microcms"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { formatDate, formatDay, formatDateShort } from "@/lib/utils";
+import { formatDate, formatDay, formatDateShort, formatEntryDueDate } from "@/lib/utils";
 import { JoinMember } from '@/components/joinmembers';
 import { TennisOffUrl } from "@/components/tennisoff-url";
 import { AnnotationText } from "@/components/annotation_text";
@@ -84,8 +84,12 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
               </td>
             </tr>
             <tr>
-              <th className="border p-2 bg-gray-100 text-left">参加人数</th>
-              <td className="border p-2">Max {post.eventMemberNum} 人</td>
+              <th className="border p-2 bg-gray-100 text-left">募集人数</th>
+              <td className="border p-2">{post.eventMemberNum} 人</td>
+            </tr>
+            <tr>
+              <th className="border p-2 bg-gray-100 text-left">募集締切</th>
+              <td className="border p-2">{post.entryDueDate ? formatEntryDueDate(post.entryDueDate) : '-'}</td>
             </tr>
             <tr>
               <th className="border p-2 bg-gray-100 text-left">参加費</th>
@@ -116,6 +120,7 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
         maxMembers={Number(post.eventMemberNum)}
         eventDate={post.eventDate}
         startTime={post.eventStartTime}
+        entryDueDate={post.entryDueDate}
       />
       
 

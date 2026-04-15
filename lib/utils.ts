@@ -34,3 +34,8 @@ export const formatDateShort = (date: string) => {
 export const formatDay = (date: string) => {
   return toJST(date).format('ddd');
 };
+
+// 募集締切用: 2026年5月13日(水) 13:00 形式
+export const formatEntryDueDate = (date: string) => {
+  return toJST(date).format('YYYY年M月D日(ddd) HH:mm');
+};
