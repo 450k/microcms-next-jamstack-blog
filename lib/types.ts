@@ -15,17 +15,6 @@ export type EventPlace = {
   };
 };
 
-export type EventMember = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  publishedAt: string;
-  revisedAt: string;
-  userID: number;
-  userNickname: string;
-  useName: string;
-};
-
 // イベント一覧表示用の型
 export type EventListItem = {
   id: string;
@@ -35,10 +24,8 @@ export type EventListItem = {
   eventStartTime: string[];
   eventHour: string;
   eventMemberNum: string;
-  member: EventMember[];
   eventCategory: string[];
   eventCourtNum: string[];
-  eventCourtSurface: string;
 };
 
 // イベント詳細ページ用の型

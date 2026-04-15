@@ -14,7 +14,7 @@ export async function GET() {
     const data = await client.get({
       endpoint: 'event',
       queries: {
-        fields: 'id,eventTitle,eventDate,eventPlace,eventStartTime,eventCategory,member,eventHour,eventMemberNum,eventCourtNum,eventCourtSurface',
+        fields: 'id,eventTitle,eventDate,eventPlace,eventStartTime,eventCategory,eventHour,eventMemberNum,eventCourtNum',
       },
     });
     

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 type Match = {
   id: string;
@@ -188,6 +189,10 @@ const playerRight = winsA >= winsB
           </Button>
         </div>
       )}
+    
+    <Button asChild className="mt-8">
+        <Link href="/">← Back to all Events</Link>
+      </Button>
     </div>
   );
 }
