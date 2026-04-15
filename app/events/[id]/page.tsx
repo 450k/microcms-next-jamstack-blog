@@ -2,7 +2,6 @@ import { client } from "@/lib/microcms"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { formatDate, formatDay, formatDateShort, formatEntryDueDate } from "@/lib/utils";
-import { JoinMember } from '@/components/joinmembers';
 import { TennisOffUrl } from "@/components/tennisoff-url";
 import { AnnotationText } from "@/components/annotation_text";
 import { EventPagination } from "@/components/event-pagination";
@@ -110,7 +109,6 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
         )}
       </div>
       
-      {/* {post.member?.length > 0 && <JoinMember member={post.member} />} */}
       {post.tennisOffUrl && <TennisOffUrl tennisOffUrl={post.tennisOffUrl} />}
       
       <EntryList eventId={post.id} />
