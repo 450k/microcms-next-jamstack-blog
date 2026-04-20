@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
             {
               type: 'text',
               // ✅ 日本時間の日付を使用
-              text: `【リマインダー】\n${entry.name}さん、今週の練習会をお忘れなく！雨天の場合は1時間前までにお知らせします。\n\n📅 ${formattedDate} ${startTime} ${event.eventTitle}\n📍 ${event.eventPlace?.[0]?.courtName}`,
+              text: `【リマインダー】\n${entry.name}さん、今週の練習会をお忘れなく！雨天の場合は1時間前までにお知らせします。\n\n📅 ${formattedDate} ${startTime} ${event.eventTitle}\n📍 ${event.eventPlace.courtName}`,
             },
           ],
         }),

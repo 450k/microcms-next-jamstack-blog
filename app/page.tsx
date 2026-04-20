@@ -26,7 +26,7 @@ export default async function Home() {
       練習会一覧
     </h2>
     <h3 className="scroll-m-20 text-center text-lg font-medium tracking-tight mb-8 ">
-      参加希望あれば連絡ください。
+      定員に達しているものでも参加できる場合があります。希望あれば連絡ください。
     </h3>
       <NewsItems newsItems={newsItems} />
       <EventCard />
