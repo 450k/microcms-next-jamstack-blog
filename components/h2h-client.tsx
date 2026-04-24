@@ -10,6 +10,7 @@ type Match = {
   match_date: string;
   score: string;
   winner: string;
+  court_surface: string;
   created_at: string;
 };
 
@@ -18,6 +19,7 @@ export function H2HClient({ initialMatches }: { initialMatches: Match[] }) {
   const [date, setDate] = useState('');
   const [score, setScore] = useState('');
   const [winner, setWinner] = useState('k450');
+  const [courtSurface, setCourtSurface] = useState('ハード');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -53,7 +55,7 @@ const playerRight = winsA >= winsB
 
     const { data, error } = await supabase
       .from('matches')
-      .insert({ match_date: date, score, winner })
+      .insert({ match_date: date, score, winner, court_surface: courtSurface })
       .select()
       .single();
 
@@ -63,6 +65,7 @@ const playerRight = winsA >= winsB
       setMatches([data, ...matches]);
       setDate('');
       setScore('');
+      setCourtSurface('ハード');
     }
     setLoading(false);
   };
@@ -118,30 +121,40 @@ const playerRight = winsA >= winsB
       {matches.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-6">まだ対戦記録がありません</p>
       ) : (
-        <ul className="mb-6">
-          {matches.map(m => (
-            <li key={m.id} className="flex items-center py-2 border-b border-gray-100 gap-3">
-              <span className="text-sm text-gray-400 w-12">{m.match_date}</span>
-              <span className="text-base font-medium flex-1 text-center">{m.score}</span>
-              <span className={`text-xs px-3 py-1 rounded ${
-                    m.winner === playerLeft.key
-                        ? `${playerLeft.badgeBg} ${playerLeft.badgeText}`
-                        : `${playerRight.badgeBg} ${playerRight.badgeText}`
-                    }`}>
-                    {m.winner}
-                    </span>
-              {/* ✅ 管理者のみ削除ボタン表示 */}
-              {isAdmin && (
-                <button
-                  onClick={() => handleDelete(m.id)}
-                  className="text-xs text-red-400 hover:text-red-600"
-                >
-                  削除
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
+        <>
+          <div className="flex items-center py-2 border-b-2 border-gray-300 gap-3 mb-2">
+            <span className="text-xs font-semibold text-gray-600 w-12">Date</span>
+            <span className="text-xs font-semibold text-gray-600 w-16">Winner</span>
+            <span className="text-xs font-semibold text-gray-600 flex-1 text-center">Score</span>
+            <span className="text-xs font-semibold text-gray-600">Surface</span>
+            {isAdmin && <span className="w-8"></span>}
+          </div>
+          <ul className="mb-6">
+            {matches.map(m => (
+              <li key={m.id} className="flex items-center py-2 border-b border-gray-100 gap-3">
+                <span className="text-sm text-gray-400 w-12">{m.match_date}</span>
+                <span className={`text-xs px-3 py-1 rounded w-16 text-center ${
+                      m.winner === playerLeft.key
+                          ? `${playerLeft.badgeBg} ${playerLeft.badgeText}`
+                          : `${playerRight.badgeBg} ${playerRight.badgeText}`
+                      }`}>
+                      {m.winner}
+                      </span>
+                <span className="text-base font-medium flex-1 text-center">{m.score}</span>
+                <span className="text-xs px-2 py-1  text-gray-600">（{m.court_surface}）</span>
+                {/* ✅ 管理者のみ削除ボタン表示 */}
+                {isAdmin && (
+                  <button
+                    onClick={() => handleDelete(m.id)}
+                    className="text-xs text-red-400 hover:text-red-600 w-8"
+                  >
+                    削除
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
       )}
 
       {/* 入力フォーム（管理者のみ） */}
@@ -159,7 +172,7 @@ const playerRight = winsA >= winsB
                 className="border rounded p-2 text-sm w-24"
               />
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 mr-8">
               <span className="text-xs text-gray-500">スコア</span>
               <input
                 type="text"
@@ -169,7 +182,7 @@ const playerRight = winsA >= winsB
                 className="border rounded p-2 text-sm w-24"
               />
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1 mr-8">
               <span className="text-xs text-gray-500">勝者</span>
               <div className="flex gap-3 mt-1">
                 <label className="flex items-center gap-1 text-sm cursor-pointer">
@@ -179,6 +192,19 @@ const playerRight = winsA >= winsB
                 <label className="flex items-center gap-1 text-sm cursor-pointer">
                   <input type="radio" name="winner" value="pb100" checked={winner === 'pb100'} onChange={() => setWinner('pb100')} />
                   pb100
+                </label>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-gray-500">コートサーフェス</span>
+              <div className="flex gap-3 mt-1">
+                <label className="flex items-center gap-1 text-sm cursor-pointer">
+                  <input type="radio" name="courtSurface" value="ハード" checked={courtSurface === 'ハード'} onChange={() => setCourtSurface('ハード')} />
+                  ハード
+                </label>
+                <label className="flex items-center gap-1 text-sm cursor-pointer">
+                  <input type="radio" name="courtSurface" value="オムニ" checked={courtSurface === 'オムニ'} onChange={() => setCourtSurface('オムニ')} />
+                  オムニ
                 </label>
               </div>
             </div>
