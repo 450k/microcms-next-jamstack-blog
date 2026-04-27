@@ -60,15 +60,35 @@ export async function POST(req: NextRequest) {
 
   // 日付と時間を組み合わせて日本時間に変換し、フォーマット
   let formattedDateTime = '';
-  if (eventDate && eventStartTime) {
-    const dateTimeString = `${eventDate} ${eventStartTime}`;
-    console.log('DateTime string:', dateTimeString);
-    const japanTime = dayjs(dateTimeString).tz('Asia/Tokyo');
-    console.log('Parsed Japan time:', japanTime.format());
-    console.log('Is valid:', japanTime.isValid());
-    if (japanTime.isValid()) {
-      formattedDateTime = japanTime.format('MM/DD HH:mm');
+  try {
+    if (eventDate && eventStartTime) {
+      // microCMSの日付フィールドは通常ISO形式や日付文字列
+      // 時間フィールドは "HH:mm" や "HH:mm:ss" 形式
+      let dateTimeString = '';
+
+      // 日付がISO形式の場合（例: "2024-04-27T00:00:00.000Z"）
+      if (eventDate.includes('T')) {
+        const date = dayjs(eventDate);
+        if (date.isValid()) {
+          // 時間部分を別途追加
+          const timeParts = eventStartTime.split(':');
+          const hours = parseInt(timeParts[0] || '0');
+          const minutes = parseInt(timeParts[1] || '0');
+          const dateWithTime = date.hour(hours).minute(minutes);
+          const japanTime = dateWithTime.tz('Asia/Tokyo');
+          formattedDateTime = japanTime.format('MM/DD HH:mm');
+        }
+      } else {
+        // 日付文字列の場合（例: "2024-04-27" や "2024/04/27"）
+        dateTimeString = `${eventDate} ${eventStartTime}`;
+        const japanTime = dayjs(dateTimeString).tz('Asia/Tokyo');
+        if (japanTime.isValid()) {
+          formattedDateTime = japanTime.format('MM/DD HH:mm');
+        }
+      }
     }
+  } catch (error) {
+    console.log('Date parsing error:', error);
   }
 
   const notificationBody = formattedDateTime ? `${formattedDateTime} ～ ${eventTitle}` : eventTitle;
