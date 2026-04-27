@@ -16,7 +16,15 @@ export async function POST(req: NextRequest) {
   const webhookSecret = process.env.MICROCMS_WEBHOOK_SECRET;
   const rawBody = await req.text();
 
+  console.log('Webhook received:', {
+    signature,
+    webhookSecret: webhookSecret ? '***' : 'not set',
+    rawBodyLength: rawBody.length,
+    headers: Object.fromEntries(req.headers.entries())
+  });
+
   if (!signature || !webhookSecret) {
+    console.log('Missing signature or webhook secret');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -24,7 +32,14 @@ export async function POST(req: NextRequest) {
     .update(rawBody)
     .digest('base64');
 
+  console.log('Signature check:', {
+    received: signature,
+    expected: expectedSignature,
+    matches: signature === expectedSignature
+  });
+
   if (signature !== webhookSecret && signature !== expectedSignature) {
+    console.log('Signature verification failed');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
