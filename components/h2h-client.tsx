@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+
 
 type Match = {
   id: string;
@@ -25,11 +27,14 @@ export function H2HClient({ initialMatches }: { initialMatches: Match[] }) {
   const [isAdmin, setIsAdmin] = useState(false);
 
   // 管理者チェック
-  useState(() => {
-    fetch('/api/admin/check')
-      .then(res => res.json())
-      .then(({ isAdmin }) => setIsAdmin(isAdmin));
-  });
+    type Props = {
+      initialMatches: Match[];
+      isAdmin: boolean; // ✅ 追加
+    };
+
+    export function H2HClient({ initialMatches, isAdmin }: Props) {
+      const [matches, setMatches] = useState<Match[]>(initialMatches);
+  // isAdmin は useState不要、propsから直接使う
 
   const winsA = matches.filter(m => m.winner === 'k450').length;
   const winsB = matches.filter(m => m.winner === 'pb100').length;
