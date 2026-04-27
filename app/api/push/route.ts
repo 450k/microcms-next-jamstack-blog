@@ -1,5 +1,6 @@
 // app/api/push/route.ts
 import { NextRequest, NextResponse } from 'next/server';
+import { createHmac } from 'crypto';
 import webpush from 'web-push';
 import { supabase } from '@/lib/supabase';
 
@@ -11,13 +12,27 @@ webpush.setVapidDetails(
 
 export async function POST(req: NextRequest) {
   // microCMSのWebhookからのリクエストか確認
-  const secret = req.headers.get('x-microcms-signature');
-  if (secret !== process.env.MICROCMS_WEBHOOK_SECRET) {
+  const signature = req.headers.get('x-microcms-signature');
+  const webhookSecret = process.env.MICROCMS_WEBHOOK_SECRET;
+  const rawBody = await req.text();
+
+  if (!signature || !webhookSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const body = await req.json();
+  const expectedSignature = createHmac('sha256', webhookSecret)
+    .update(rawBody)
+    .digest('base64');
+
+  if (signature !== webhookSecret && signature !== expectedSignature) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const body = JSON.parse(rawBody);
   const eventTitle = body.contents?.new?.publishValue?.eventTitle ?? '新しいイベント';
+  const eventDate = body.contents?.new?.publishValue?.eventDate ?? '';
+  const eventStartTime = body.contents?.new?.publishValue?.eventStartTime ?? '';
+  const notificationBody = [eventDate, eventStartTime, eventTitle].filter(Boolean).join(' ');
 
   // Supabaseから全購読者を取得
   const { data: subscriptions } = await supabase
@@ -38,7 +53,7 @@ export async function POST(req: NextRequest) {
         },
         JSON.stringify({
           title: '🎾 新しいイベントが登録されました',
-          body: eventTitle,
+          body: notificationBody,
         })
       )
     )
