@@ -56,15 +56,23 @@ export async function POST(req: NextRequest) {
   const eventDate = body.contents?.new?.publishValue?.eventDate ?? '';
   const eventStartTime = body.contents?.new?.publishValue?.eventStartTime ?? '';
 
+  console.log('Event data:', { eventTitle, eventDate, eventStartTime });
+
   // 日付と時間を組み合わせて日本時間に変換し、フォーマット
   let formattedDateTime = '';
   if (eventDate && eventStartTime) {
     const dateTimeString = `${eventDate} ${eventStartTime}`;
+    console.log('DateTime string:', dateTimeString);
     const japanTime = dayjs(dateTimeString).tz('Asia/Tokyo');
-    formattedDateTime = japanTime.format('MM/DD HH:mm');
+    console.log('Parsed Japan time:', japanTime.format());
+    console.log('Is valid:', japanTime.isValid());
+    if (japanTime.isValid()) {
+      formattedDateTime = japanTime.format('MM/DD HH:mm');
+    }
   }
 
   const notificationBody = formattedDateTime ? `${formattedDateTime} ～ ${eventTitle}` : eventTitle;
+  console.log('Final notification body:', notificationBody);
 
   // Supabaseから全購読者を取得
   const { data: subscriptions } = await supabase
