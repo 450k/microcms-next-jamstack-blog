@@ -3,14 +3,7 @@ import { NewsItems } from '@/components/newsList';
 import { client } from '@/lib/microcms';
 import type { NewsItem } from '@/lib/types';
 
-// app/page.tsx
-import dynamic from 'next/dynamic';
-
-//  SSRを無効にして動的インポート
-const PushSubscribe = dynamic(
-  () => import('@/components/push-subscribe').then(m => m.PushSubscribe),
-  { ssr: false } // ← SSRを無効にするオプション
-);
+import { PushSubscribeWrapper } from '@/components/push-subscribe-wrapper';
 
 
 // ニュースデータを取得
@@ -35,7 +28,7 @@ export default async function Home() {
       <h2 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance mb-6">
       練習会一覧
     </h2>
-    <PushSubscribe />
+    <PushSubscribeWrapper />
     <h3 className="scroll-m-20 text-center text-lg font-medium tracking-tight mb-8 ">
       定員に達しているものでも参加できる場合があります。希望あれば連絡ください。
     </h3>
