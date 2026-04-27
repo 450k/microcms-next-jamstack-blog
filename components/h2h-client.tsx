@@ -4,8 +4,6 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { cookies } from 'next/headers';
-
 
 type Match = {
   id: string;
@@ -16,7 +14,12 @@ type Match = {
   created_at: string;
 };
 
-export function H2HClient({ initialMatches }: { initialMatches: Match[] }) {
+type Props = {
+  initialMatches: Match[];
+  isAdmin: boolean; // propsで受け取る
+};
+
+export function H2HClient({ initialMatches, isAdmin }: Props) {
   const [matches, setMatches] = useState<Match[]>(initialMatches);
   const [date, setDate] = useState('');
   const [score, setScore] = useState('');
@@ -24,31 +27,20 @@ export function H2HClient({ initialMatches }: { initialMatches: Match[] }) {
   const [courtSurface, setCourtSurface] = useState('ハード');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // 管理者チェック
-    type Props = {
-      initialMatches: Match[];
-      isAdmin: boolean; // ✅ 追加
-    };
-
-    export function H2HClient({ initialMatches, isAdmin }: Props) {
-      const [matches, setMatches] = useState<Match[]>(initialMatches);
-  // isAdmin は useState不要、propsから直接使う
 
   const winsA = matches.filter(m => m.winner === 'k450').length;
   const winsB = matches.filter(m => m.winner === 'pb100').length;
   const total = matches.length;
   const pctA = total === 0 ? 50 : Math.round(winsA / total * 100);
   const pctB = total === 0 ? 50 : Math.round(winsB / total * 100);
-const playerLeft = winsA >= winsB
-  ? { key: 'k450', initial: 'K', wins: winsA, pct: pctA, colorBg: 'bg-blue-100', colorText: 'text-blue-800', colorWin: 'text-blue-700', barColor: 'bg-blue-500', badgeBg: 'bg-blue-50', badgeText: 'text-blue-800' }
-  : { key: 'pb100', initial: 'P', wins: winsB, pct: pctB, colorBg: 'bg-orange-100', colorText: 'text-orange-800', colorWin: 'text-orange-700', barColor: 'bg-orange-500', badgeBg: 'bg-orange-50', badgeText: 'text-orange-800' };
 
-const playerRight = winsA >= winsB
-  ? { key: 'pb100', initial: 'P', wins: winsB, pct: pctB, colorBg: 'bg-orange-100', colorText: 'text-orange-800', colorWin: 'text-orange-700', barColor: 'bg-orange-500', badgeBg: 'bg-orange-50', badgeText: 'text-orange-800' }
-  : { key: 'k450', initial: 'K', wins: winsA, pct: pctA, colorBg: 'bg-blue-100', colorText: 'text-blue-800', colorWin: 'text-blue-700', barColor: 'bg-blue-500', badgeBg: 'bg-blue-50', badgeText: 'text-blue-800' };
+  const playerLeft = winsA >= winsB
+    ? { key: 'k450', initial: 'K', wins: winsA, pct: pctA, colorBg: 'bg-blue-100', colorText: 'text-blue-800', colorWin: 'text-blue-700', barColor: 'bg-blue-500', badgeBg: 'bg-blue-50', badgeText: 'text-blue-800' }
+    : { key: 'pb100', initial: 'P', wins: winsB, pct: pctB, colorBg: 'bg-orange-100', colorText: 'text-orange-800', colorWin: 'text-orange-700', barColor: 'bg-orange-500', badgeBg: 'bg-orange-50', badgeText: 'text-orange-800' };
 
+  const playerRight = winsA >= winsB
+    ? { key: 'pb100', initial: 'P', wins: winsB, pct: pctB, colorBg: 'bg-orange-100', colorText: 'text-orange-800', colorWin: 'text-orange-700', barColor: 'bg-orange-500', badgeBg: 'bg-orange-50', badgeText: 'text-orange-800' }
+    : { key: 'k450', initial: 'K', wins: winsA, pct: pctA, colorBg: 'bg-blue-100', colorText: 'text-blue-800', colorWin: 'text-blue-700', barColor: 'bg-blue-500', badgeBg: 'bg-blue-50', badgeText: 'text-blue-800' };
 
   const handleAdd = async () => {
     if (!date.trim() || !score.trim()) {
@@ -84,42 +76,42 @@ const playerRight = winsA >= winsB
     <div className="mx-auto max-w-2xl p-6">
 
       {/* ヘッダー */}
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6">
         <div className="flex flex-col items-center flex-1">
-            <div className={`w-16 h-16 rounded-full ${playerLeft.colorBg} flex items-center justify-center text-xl font-medium ${playerLeft.colorText}`}>
+          <div className={`w-16 h-16 rounded-full ${playerLeft.colorBg} flex items-center justify-center text-xl font-medium ${playerLeft.colorText}`}>
             {playerLeft.initial}
-            </div>
-            <span className="mt-2 text-lg font-medium">{playerLeft.key}</span>
+          </div>
+          <span className="mt-2 text-lg font-medium">{playerLeft.key}</span>
         </div>
         <div className="flex flex-col items-center gap-1">
-            <span className="text-sm text-gray-500">head to head</span>
-            <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-500">head to head</span>
+          <div className="flex items-center gap-4">
             <span className={`text-4xl font-medium ${playerLeft.colorWin}`}>{playerLeft.wins}</span>
             <span className="text-2xl text-gray-300">-</span>
             <span className={`text-4xl font-medium ${playerRight.colorWin}`}>{playerRight.wins}</span>
-            </div>
-            <span className="text-sm text-gray-500">{total} matches</span>
+          </div>
+          <span className="text-sm text-gray-500">{total} matches</span>
         </div>
         <div className="flex flex-col items-center flex-1">
-            <div className={`w-16 h-16 rounded-full ${playerRight.colorBg} flex items-center justify-center text-xl font-medium ${playerRight.colorText}`}>
+          <div className={`w-16 h-16 rounded-full ${playerRight.colorBg} flex items-center justify-center text-xl font-medium ${playerRight.colorText}`}>
             {playerRight.initial}
-            </div>
-            <span className="mt-2 text-lg font-medium">{playerRight.key}</span>
+          </div>
+          <span className="mt-2 text-lg font-medium">{playerRight.key}</span>
         </div>
-        </div>
+      </div>
 
-        {/* 勝率バー */}
-        <div className="mb-6">
+      {/* 勝率バー */}
+      <div className="mb-6">
         <div className="flex justify-between text-sm mb-1">
-            <span className={`font-medium ${playerLeft.colorWin}`}>{total === 0 ? '-' : playerLeft.pct + '%'}</span>
-            <span className="text-gray-400 text-xs">勝率</span>
-            <span className={`font-medium ${playerRight.colorWin}`}>{total === 0 ? '-' : playerRight.pct + '%'}</span>
+          <span className={`font-medium ${playerLeft.colorWin}`}>{total === 0 ? '-' : playerLeft.pct + '%'}</span>
+          <span className="text-gray-400 text-xs">勝率</span>
+          <span className={`font-medium ${playerRight.colorWin}`}>{total === 0 ? '-' : playerRight.pct + '%'}</span>
         </div>
         <div className="h-3 rounded-full bg-gray-100 overflow-hidden flex">
-            <div className={`${playerLeft.barColor} h-full transition-all duration-500`} style={{ width: `${playerLeft.pct}%` }} />
-            <div className={`${playerRight.barColor} h-full transition-all duration-500`} style={{ width: `${playerRight.pct}%` }} />
+          <div className={`${playerLeft.barColor} h-full transition-all duration-500`} style={{ width: `${playerLeft.pct}%` }} />
+          <div className={`${playerRight.barColor} h-full transition-all duration-500`} style={{ width: `${playerRight.pct}%` }} />
         </div>
-        </div>
+      </div>
 
       {/* 対戦履歴 */}
       <div className="text-xs text-gray-400 mb-3 tracking-wide">対戦履歴</div>
@@ -139,15 +131,14 @@ const playerRight = winsA >= winsB
               <li key={m.id} className="flex items-center py-2 border-b border-gray-100 gap-3">
                 <span className="text-sm text-gray-400 w-12">{m.match_date}</span>
                 <span className={`text-xs px-3 py-1 rounded w-16 text-center ${
-                      m.winner === playerLeft.key
-                          ? `${playerLeft.badgeBg} ${playerLeft.badgeText}`
-                          : `${playerRight.badgeBg} ${playerRight.badgeText}`
-                      }`}>
-                      {m.winner}
-                      </span>
+                  m.winner === playerLeft.key
+                    ? `${playerLeft.badgeBg} ${playerLeft.badgeText}`
+                    : `${playerRight.badgeBg} ${playerRight.badgeText}`
+                }`}>
+                  {m.winner}
+                </span>
                 <span className="text-base font-medium flex-1 text-center">{m.score}</span>
-                <span className="text-xs px-2 py-1  text-gray-600">（{m.court_surface}）</span>
-                {/* ✅ 管理者のみ削除ボタン表示 */}
+                <span className="text-xs px-2 py-1 text-gray-600">（{m.court_surface}）</span>
                 {isAdmin && (
                   <button
                     onClick={() => handleDelete(m.id)}
@@ -220,8 +211,8 @@ const playerRight = winsA >= winsB
           </Button>
         </div>
       )}
-    
-    <Button asChild className="mt-8">
+
+      <Button asChild className="mt-8">
         <Link href="/">← TOPに戻る</Link>
       </Button>
     </div>

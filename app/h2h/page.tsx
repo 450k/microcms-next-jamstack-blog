@@ -1,8 +1,7 @@
 // app/h2h/page.tsx
+import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
 import { H2HClient } from '@/components/h2h-client';
-
-import { cookies } from 'next/headers';
 
 export default async function H2HPage() {
   const cookieStore = await cookies();
