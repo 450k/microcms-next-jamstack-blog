@@ -52,39 +52,38 @@ export async function POST(req: NextRequest) {
 
   console.log('Signature verification passed');
   const body = JSON.parse(rawBody);
-  const eventTitle = body.contents?.new?.publishValue?.eventTitle ?? '新しいイベント';
-  const eventDate = body.contents?.new?.publishValue?.eventDate ?? '';
-  const eventStartTime = body.contents?.new?.publishValue?.eventStartTime ?? '';
+  const newContent = body.contents?.new ?? {};
+  const publishValue = newContent.publishValue ?? newContent;
+  const eventTitle = publishValue?.eventTitle ?? '新しいイベント';
+  const eventDate = publishValue?.eventDate ?? '';
+  let eventStartTime = publishValue?.eventStartTime ?? '';
+  if (Array.isArray(eventStartTime)) {
+    eventStartTime = eventStartTime[0] ?? '';
+  }
 
-  console.log('Event data:', { eventTitle, eventDate, eventStartTime });
+  console.log('Event data:', { eventTitle, eventDate, eventStartTime, publishValue });
 
   // 日付と時間を組み合わせて日本時間に変換し、フォーマット
   let formattedDateTime = '';
   try {
-    if (eventDate && eventStartTime) {
-      // microCMSの日付フィールドは通常ISO形式や日付文字列
-      // 時間フィールドは "HH:mm" や "HH:mm:ss" 形式
-      let dateTimeString = '';
-
-      // 日付がISO形式の場合（例: "2024-04-27T00:00:00.000Z"）
-      if (eventDate.includes('T')) {
-        const date = dayjs(eventDate);
-        if (date.isValid()) {
-          // 時間部分を別途追加
-          const timeParts = eventStartTime.split(':');
-          const hours = parseInt(timeParts[0] || '0');
-          const minutes = parseInt(timeParts[1] || '0');
-          const dateWithTime = date.hour(hours).minute(minutes);
-          const japanTime = dateWithTime.tz('Asia/Tokyo');
-          formattedDateTime = japanTime.format('MM/DD HH:mm');
+    if (eventDate) {
+      const startTime = eventStartTime || '';
+      const date = dayjs(eventDate);
+      if (date.isValid()) {
+        let dateWithTime = date;
+        if (startTime) {
+          const [hourStr, minuteStr] = startTime.split(':');
+          const hours = parseInt(hourStr || '0', 10);
+          const minutes = parseInt(minuteStr || '0', 10);
+          if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
+            dateWithTime = date.hour(hours).minute(minutes);
+          }
         }
-      } else {
-        // 日付文字列の場合（例: "2024-04-27" や "2024/04/27"）
-        dateTimeString = `${eventDate} ${eventStartTime}`;
-        const japanTime = dayjs(dateTimeString).tz('Asia/Tokyo');
-        if (japanTime.isValid()) {
-          formattedDateTime = japanTime.format('MM/DD HH:mm');
-        }
+        const japanTime = dateWithTime.tz('Asia/Tokyo');
+        formattedDateTime = japanTime.format('MM/DD HH:mm');
+      }
+      if (!formattedDateTime && eventDate && eventStartTime) {
+        formattedDateTime = `${eventDate} ${eventStartTime}`;
       }
     }
   } catch (error) {
