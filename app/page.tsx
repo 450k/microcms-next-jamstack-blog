@@ -5,6 +5,13 @@ import type { NewsItem } from '@/lib/types';
 
 // app/page.tsx
 import { PushSubscribe } from '@/components/push-subscribe';
+import dynamic from 'next/dynamic';
+
+// SSRを無効にして動的インポート
+const PushSubscribe = dynamic(
+  () => import('@/components/push-subscribe').then(m => m.PushSubscribe),
+  { ssr: false } // ← SSRを無効にするオプション
+);
 
 
 // ニュースデータを取得
