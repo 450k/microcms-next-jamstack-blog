@@ -21,36 +21,22 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get('x-microcms-signature');
   const webhookSecret = process.env.MICROCMS_WEBHOOK_SECRET;
 
-  console.log('=== Webhook Debug Info ===');
-  console.log('Signature from header:', signature);
-  console.log('Webhook secret exists:', !!webhookSecret);
-  console.log('Webhook secret value:', webhookSecret);
-
   if (!signature || !webhookSecret) {
-    console.log('Missing signature or webhook secret');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   // Next.js では req.text() で生のボディを取得
   const rawBody = await req.text();
-  console.log('Raw body length:', rawBody.length);
-  console.log('Raw body preview:', rawBody.substring(0, 500));
 
   // HMAC-SHA256 で署名を計算 (hexエンコーディングで検証)
   const expectedSignature = createHmac('sha256', webhookSecret)
     .update(rawBody, 'utf8')
     .digest('hex');
 
-  console.log('Expected signature (hex):', expectedSignature);
-  console.log('Received signature:', signature);
-  console.log('Signatures match:', signature === expectedSignature);
-
   if (signature !== expectedSignature) {
-    console.log('Signature verification failed');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  console.log('Signature verification passed');
   const body = JSON.parse(rawBody);
   const newContent = body.contents?.new ?? {};
   const publishValue = newContent.publishValue ?? newContent;
@@ -60,8 +46,6 @@ export async function POST(req: NextRequest) {
   if (Array.isArray(eventStartTime)) {
     eventStartTime = eventStartTime[0] ?? '';
   }
-
-  console.log('Event data:', { eventTitle, eventDate, eventStartTime, publishValue });
 
   // 日付と時間を組み合わせて日本時間に変換し、フォーマット
   let formattedDateTime = '';
@@ -92,11 +76,10 @@ export async function POST(req: NextRequest) {
       }
     }
   } catch (error) {
-    console.log('Date parsing error:', error);
+    // ignore parse errors and use the title only
   }
 
   const notificationBody = formattedDateTime ? `${formattedDateTime} ～ ${eventTitle}` : eventTitle;
-  console.log('Final notification body:', notificationBody);
 
   // Supabaseから全購読者を取得
   const { data: subscriptions } = await supabase
