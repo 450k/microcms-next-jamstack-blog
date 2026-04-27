@@ -3,6 +3,10 @@ import { NewsItems } from '@/components/newsList';
 import { client } from '@/lib/microcms';
 import type { NewsItem } from '@/lib/types';
 
+// app/page.tsx
+import { PushSubscribe } from '@/components/push-subscribe';
+
+
 // ニュースデータを取得
 async function getNews(): Promise<NewsItem[]> {
   try {
@@ -25,9 +29,11 @@ export default async function Home() {
       <h2 className="scroll-m-20 text-center text-3xl font-bold tracking-tight text-balance mb-6">
       練習会一覧
     </h2>
+    <PushSubscribe />
     <h3 className="scroll-m-20 text-center text-lg font-medium tracking-tight mb-8 ">
       定員に達しているものでも参加できる場合があります。希望あれば連絡ください。
     </h3>
+
       <NewsItems newsItems={newsItems} />
       <EventCard />
     </>
