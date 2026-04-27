@@ -16,12 +16,11 @@ export async function POST(req: NextRequest) {
   const webhookSecret = process.env.MICROCMS_WEBHOOK_SECRET;
   const rawBody = await req.text();
 
-  console.log('Webhook received:', {
-    signature,
-    webhookSecret: webhookSecret ? '***' : 'not set',
-    rawBodyLength: rawBody.length,
-    headers: Object.fromEntries(req.headers.entries())
-  });
+  console.log('=== Webhook Debug Info ===');
+  console.log('Signature from header:', signature);
+  console.log('Webhook secret exists:', !!webhookSecret);
+  console.log('Raw body length:', rawBody.length);
+  console.log('Raw body preview:', rawBody.substring(0, 200) + '...');
 
   if (!signature || !webhookSecret) {
     console.log('Missing signature or webhook secret');
@@ -32,17 +31,15 @@ export async function POST(req: NextRequest) {
     .update(rawBody)
     .digest('base64');
 
-  console.log('Signature check:', {
-    received: signature,
-    expected: expectedSignature,
-    matches: signature === expectedSignature
-  });
+  console.log('Expected signature:', expectedSignature);
+  console.log('Signatures match:', signature === expectedSignature);
 
   if (signature !== expectedSignature) {
     console.log('Signature verification failed');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  console.log('Signature verification passed');
   const body = JSON.parse(rawBody);
   const eventTitle = body.contents?.new?.publishValue?.eventTitle ?? '新しいイベント';
   const eventDate = body.contents?.new?.publishValue?.eventDate ?? '';
