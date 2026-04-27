@@ -68,22 +68,27 @@ export async function POST(req: NextRequest) {
   try {
     if (eventDate) {
       const startTime = eventStartTime || '';
-      const date = dayjs(eventDate);
-      if (date.isValid()) {
-        let dateWithTime = date;
-        if (startTime) {
+      let japanTime = null;
+
+      if (eventDate.includes('T')) {
+        // ISO形式の日付文字列を日本時間として解釈
+        japanTime = dayjs(eventDate).tz('Asia/Tokyo');
+        if (japanTime.isValid() && startTime) {
           const [hourStr, minuteStr] = startTime.split(':');
           const hours = parseInt(hourStr || '0', 10);
           const minutes = parseInt(minuteStr || '0', 10);
           if (!Number.isNaN(hours) && !Number.isNaN(minutes)) {
-            dateWithTime = date.hour(hours).minute(minutes);
+            japanTime = japanTime.hour(hours).minute(minutes);
           }
         }
-        const japanTime = dateWithTime.tz('Asia/Tokyo');
-        formattedDateTime = japanTime.format('MM/DD HH:mm');
+      } else {
+        // 日付文字列と時間をまとめて日本時間として解釈
+        const dateTimeString = startTime ? `${eventDate} ${startTime}` : eventDate;
+        japanTime = dayjs.tz(dateTimeString, 'Asia/Tokyo');
       }
-      if (!formattedDateTime && eventDate && eventStartTime) {
-        formattedDateTime = `${eventDate} ${eventStartTime}`;
+
+      if (japanTime && japanTime.isValid()) {
+        formattedDateTime = japanTime.format('MM/DD HH:mm');
       }
     }
   } catch (error) {
