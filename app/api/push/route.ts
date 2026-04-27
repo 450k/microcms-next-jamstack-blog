@@ -14,24 +14,29 @@ export async function POST(req: NextRequest) {
   // microCMSのWebhookからのリクエストか確認
   const signature = req.headers.get('x-microcms-signature');
   const webhookSecret = process.env.MICROCMS_WEBHOOK_SECRET;
-  const rawBody = await req.text();
 
   console.log('=== Webhook Debug Info ===');
   console.log('Signature from header:', signature);
   console.log('Webhook secret exists:', !!webhookSecret);
-  console.log('Raw body length:', rawBody.length);
-  console.log('Raw body preview:', rawBody.substring(0, 200) + '...');
+  console.log('Webhook secret value:', webhookSecret);
 
   if (!signature || !webhookSecret) {
     console.log('Missing signature or webhook secret');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const expectedSignature = createHmac('sha256', webhookSecret)
-    .update(rawBody)
-    .digest('base64');
+  // Next.js では req.text() で生のボディを取得
+  const rawBody = await req.text();
+  console.log('Raw body length:', rawBody.length);
+  console.log('Raw body preview:', rawBody.substring(0, 500));
 
-  console.log('Expected signature:', expectedSignature);
+  // HMAC-SHA256 で署名を計算 (hexエンコーディングで検証)
+  const expectedSignature = createHmac('sha256', webhookSecret)
+    .update(rawBody, 'utf8')
+    .digest('hex');
+
+  console.log('Expected signature (hex):', expectedSignature);
+  console.log('Received signature:', signature);
   console.log('Signatures match:', signature === expectedSignature);
 
   if (signature !== expectedSignature) {
