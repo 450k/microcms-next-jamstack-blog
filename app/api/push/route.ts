@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     matches: signature === expectedSignature
   });
 
-  if (signature !== webhookSecret && signature !== expectedSignature) {
+  if (signature !== expectedSignature) {
     console.log('Signature verification failed');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
