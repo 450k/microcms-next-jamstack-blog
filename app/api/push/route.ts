@@ -1,8 +1,14 @@
 // app/api/push/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
 import webpush from 'web-push';
 import { supabase } from '@/lib/supabase';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 webpush.setVapidDetails(
   process.env.VAPID_EMAIL!,
@@ -49,7 +55,16 @@ export async function POST(req: NextRequest) {
   const eventTitle = body.contents?.new?.publishValue?.eventTitle ?? '新しいイベント';
   const eventDate = body.contents?.new?.publishValue?.eventDate ?? '';
   const eventStartTime = body.contents?.new?.publishValue?.eventStartTime ?? '';
-  const notificationBody = [eventDate, eventStartTime, eventTitle].filter(Boolean).join(' ');
+
+  // 日付と時間を組み合わせて日本時間に変換し、フォーマット
+  let formattedDateTime = '';
+  if (eventDate && eventStartTime) {
+    const dateTimeString = `${eventDate} ${eventStartTime}`;
+    const japanTime = dayjs(dateTimeString).tz('Asia/Tokyo');
+    formattedDateTime = japanTime.format('MM/DD HH:mm');
+  }
+
+  const notificationBody = formattedDateTime ? `${formattedDateTime} ～ ${eventTitle}` : eventTitle;
 
   // Supabaseから全購読者を取得
   const { data: subscriptions } = await supabase
