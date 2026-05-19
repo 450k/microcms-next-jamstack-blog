@@ -21,10 +21,9 @@ export function NewsItems({ newsItems = [] }: Props) {
           <li key={news.id} className="mb-2">
             <div className="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-0">
               <span className="font-medium">{formatDate(news.publishedAt)}</span>
-              <span className="font-normal line-clamp-2">{news.newsTitle}</span>
               {news.linkTo && (
                 <a href={news.linkTo} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline text-sm self-start">
-                  詳細 →
+                  <span className="font-medium line-clamp-2">{news.newsTitle}</span>
                 </a>
               )}
             </div>
