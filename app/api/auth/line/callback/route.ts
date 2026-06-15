@@ -1,6 +1,7 @@
 // app/api/auth/line/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getPostHogClient } from '@/lib/posthog-server';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -45,6 +46,23 @@ const [eventId, eventTitle, name, eventDate, startTime] = state.split('|');
     event_title: eventTitle,
     name: name,
     line_user_id: lineUserId,
+  });
+
+  const posthog = getPostHogClient();
+  posthog.identify({
+    distinctId: lineUserId,
+    properties: { name, line_user_id: lineUserId },
+  });
+  posthog.capture({
+    distinctId: lineUserId,
+    event: 'entry_completed',
+    properties: {
+      event_id: eventId,
+      event_title: eventTitle,
+      event_date: eventDate,
+      start_time: startTime,
+      participant_name: name,
+    },
   });
 
   // ✅ 日本時間の日付を使用

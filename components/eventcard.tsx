@@ -5,6 +5,7 @@ import { formatDate, formatDay, formatDateShort } from "@/lib/utils";
 import type { EventListItem } from "@/lib/types";
 import { CategoryBadge } from '@/components/category-badge';
 import { supabase } from '@/lib/supabase';
+import posthog from 'posthog-js';
 
 // shad cn のパーツをインポート
 import { Badge } from "@/components/ui/badge"
@@ -111,11 +112,14 @@ export function EventCard() {
         <div>
             <div className='flex justify-between sortButton-container mb-4'>
                 <div className="flex flex-col gap-4">
-                    <ToggleGroup 
-                        className='category-filter' 
-                        type="single" 
+                    <ToggleGroup
+                        className='category-filter'
+                        type="single"
                         value={selectedCategory}
-                        onValueChange={setSelectedCategory}
+                        onValueChange={(value) => {
+                            setSelectedCategory(value);
+                            posthog.capture('category_filter_changed', { category: value || 'all' });
+                        }}
                         variant="outline"
                     >
                         <ToggleGroupItem 
