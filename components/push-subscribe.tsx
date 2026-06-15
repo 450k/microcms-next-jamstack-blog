@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import posthog from 'posthog-js';
 
 export function PushSubscribe() {
   const [subscribed, setSubscribed] = useState(false);
@@ -42,10 +41,8 @@ export function PushSubscribe() {
       });
 
       setSubscribed(true);
-      posthog.capture('push_notification_subscribed');
     } catch (error) {
       console.error('購読登録に失敗しました:', error);
-      posthog.captureException(error);
     }
     setLoading(false);
   };
@@ -60,10 +57,8 @@ export function PushSubscribe() {
         await sub.unsubscribe();
       }
       setSubscribed(false);
-      posthog.capture('push_notification_unsubscribed');
     } catch (error) {
       console.error('購読解除に失敗しました:', error);
-      posthog.captureException(error);
     }
     setLoading(false);
   };
