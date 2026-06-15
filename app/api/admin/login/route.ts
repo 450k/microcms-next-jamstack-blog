@@ -1,6 +1,5 @@
 // app/api/admin/login/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getPostHogClient } from '@/lib/posthog-server';
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json();
@@ -8,13 +7,6 @@ export async function POST(req: NextRequest) {
   if (password !== process.env.ADMIN_PASSWORD) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const posthog = getPostHogClient();
-  posthog.capture({
-    distinctId: 'admin',
-    event: 'admin_logged_in',
-    properties: { source: 'api' },
-  });
 
   const res = NextResponse.json({ success: true });
 

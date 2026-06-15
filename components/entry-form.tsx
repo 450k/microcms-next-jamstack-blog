@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import posthog from 'posthog-js';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -48,15 +47,6 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
       setError('お名前を入力してください');
       return;
     }
-
-    posthog.identify(name.trim(), { name: name.trim() });
-    posthog.capture('entry_line_login_clicked', {
-      event_id: eventId,
-      event_title: eventTitle,
-      event_date: eventDate,
-      participant_name: name.trim(),
-    });
-
     // LINEログインページにリダイレクト
     const params = new URLSearchParams({
       response_type: 'code',

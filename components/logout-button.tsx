@@ -2,14 +2,11 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import posthog from 'posthog-js';
 
 export function LogoutButton() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    posthog.capture('admin_logged_out');
-    posthog.reset();
     await fetch('/api/admin/logout', { method: 'POST' });
     router.push('/admin/login');
   };
