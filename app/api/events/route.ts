@@ -15,6 +15,8 @@ export async function GET() {
       endpoint: 'event',
       queries: {
         fields: 'id,eventTitle,eventDate,eventPlace,eventStartTime,eventCategory,eventHour,eventMemberNum,eventCourtNum',
+        limit: 100,
+        orders: 'eventDate',
       },
     });
     
