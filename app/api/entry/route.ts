@@ -5,15 +5,30 @@ import { supabase } from '@/lib/supabase';
 export async function POST(req: NextRequest) {
   const { name, eventId, eventTitle, eventDate, eventStartTime } = await req.json();
 
-  // Supabaseにエントリーを保存
-  const { error } = await supabase.from('entries').insert({
-    event_id: eventId,
-    event_title: eventTitle,
-    name: name.trim(),
-  });
+  const normalizedName = name.trim();
 
-  if (error) {
-    return NextResponse.json({ error: 'エントリーに失敗しました' }, { status: 500 });
+  const { data: existingEntries, error: existingError } = await supabase
+    .from('entries')
+    .select('id')
+    .eq('event_id', eventId)
+    .eq('cancelled', false)
+    .eq('name', normalizedName)
+    .limit(1);
+
+  if (existingError) {
+    return NextResponse.json({ error: 'エントリー確認に失敗しました' }, { status: 500 });
+  }
+
+  if (!existingEntries?.length) {
+    const { error } = await supabase.from('entries').insert({
+      event_id: eventId,
+      event_title: eventTitle,
+      name: normalizedName,
+    });
+
+    if (error) {
+      return NextResponse.json({ error: 'エントリーに失敗しました' }, { status: 500 });
+    }
   }
 
   // LINE通知を送信

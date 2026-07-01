@@ -41,12 +41,49 @@ const [eventId, eventTitle, name, eventDate, startTime] = state.split('|');
   const profile = await profileRes.json();
   const lineUserId = profile.userId;
 
-  await supabase.from('entries').insert({
-    event_id: eventId,
-    event_title: eventTitle,
-    name: name,
-    line_user_id: lineUserId,
-  });
+  const normalizedName = name.trim();
+
+  const { data: existingEntries, error: existingError } = await supabase
+    .from('entries')
+    .select('id')
+    .eq('event_id', eventId)
+    .eq('cancelled', false)
+    .eq('line_user_id', lineUserId)
+    .limit(1);
+
+  if (existingError) {
+    console.error('Failed to check existing entry:', existingError);
+    return NextResponse.redirect(new URL('/?error=entry-check-failed', req.url));
+  }
+
+  if (!existingEntries?.length) {
+    const { data: existingNameEntries, error: existingNameError } = await supabase
+      .from('entries')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('cancelled', false)
+      .eq('name', normalizedName)
+      .limit(1);
+
+    if (existingNameError) {
+      console.error('Failed to check existing name entry:', existingNameError);
+      return NextResponse.redirect(new URL('/?error=entry-check-failed', req.url));
+    }
+
+    if (!existingNameEntries?.length) {
+      const { error: insertError } = await supabase.from('entries').insert({
+        event_id: eventId,
+        event_title: eventTitle,
+        name: normalizedName,
+        line_user_id: lineUserId,
+      });
+
+      if (insertError) {
+        console.error('Failed to insert entry:', insertError);
+        return NextResponse.redirect(new URL('/?error=entry-insert-failed', req.url));
+      }
+    }
+  }
 
   const posthog = getPostHogClient();
   posthog.identify({

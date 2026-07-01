@@ -24,6 +24,7 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [entryCount, setEntryCount] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const startTimeStr = Array.isArray(startTime) ? startTime[0] : startTime;
 
   // 締め切り判定
@@ -44,11 +45,14 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
 
 
   const handleLineLogin = () => {
+    if (isSubmitting) return;
+
     if (!name.trim()) {
       setError('お名前を入力してください');
       return;
     }
 
+    setIsSubmitting(true);
     posthog.identify(name.trim(), { name: name.trim() });
     posthog.capture('entry_line_login_clicked', {
       event_id: eventId,
@@ -105,9 +109,10 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
       {/* ✅ LINEログインボタン */}
       <Button
         onClick={handleLineLogin}
+        disabled={isSubmitting}
         className="bg-green-500 hover:bg-green-600 text-white w-2xs h-12"
       >
-        LINEでエントリー
+        {isSubmitting ? '送信中...' : 'LINEでエントリー'}
       </Button>
     </div>
   );
