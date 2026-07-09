@@ -24,14 +24,25 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/ui/toggle-group"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 import { useState, useEffect } from 'react';
 
+const formatYearMonth = (dateString: string) => {
+    const [year, month] = dateString.split('-');
+    return `${year}-${month}`;
+};
 
 export function EventCard() {
     const [posts, setPosts] = useState<EventListItem[]>([]);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
     const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [selectedMonth, setSelectedMonth] = useState<string>('');
     const [entryCounts, setEntryCounts] = useState<{ [key: string]: number }>({});
 
     useEffect(() => {
@@ -88,12 +99,20 @@ export function EventCard() {
         new Set(posts.flatMap(post => post.eventCategory || []))
     ).filter(Boolean).sort();
 
+    const uniqueMonths = Array.from(
+        new Set(posts.map(post => formatYearMonth(post.eventDate)))
+    ).filter(Boolean).sort();
+
     // フィルタ済みのポストを取得
-    const filteredPosts = selectedCategory 
-        ? posts.filter(post => post.eventCategory.includes(selectedCategory))
+    const monthFilteredPosts = selectedMonth
+        ? posts.filter(post => formatYearMonth(post.eventDate) === selectedMonth)
         : posts;
 
-    const sortedPosts = [...filteredPosts].sort((a, b) => {
+    const categoryFilteredPosts = selectedCategory
+        ? monthFilteredPosts.filter(post => post.eventCategory.includes(selectedCategory))
+        : monthFilteredPosts;
+
+    const sortedPosts = [...categoryFilteredPosts].sort((a, b) => {
         const dateA = new Date(a.eventDate);
         const dateB = new Date(b.eventDate);
         return sortOrder === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
@@ -110,8 +129,41 @@ export function EventCard() {
 
     return (
         <div>
-            <div className='flex justify-between sortButton-container mb-4'>
+            <div className='flex flex-col gap-4 sortButton-container mb-4 md:flex-row md:items-start md:justify-between'>
                 <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <span className="text-sm font-medium text-muted-foreground">
+                            月で絞り込み
+                        </span>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="w-fit">
+                                    {selectedMonth ? `${selectedMonth.replace('-', '年')}月` : 'すべて'}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                                <DropdownMenuItem
+                                    onSelect={() => {
+                                        setSelectedMonth('');
+                                        posthog.capture('month_filter_changed', { month: 'all' });
+                                    }}
+                                >
+                                    すべて
+                                </DropdownMenuItem>
+                                {uniqueMonths.map((month) => (
+                                    <DropdownMenuItem
+                                        key={month}
+                                        onSelect={() => {
+                                            setSelectedMonth(month);
+                                            posthog.capture('month_filter_changed', { month });
+                                        }}
+                                    >
+                                        {month.replace('-', '年')}月
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                     <ToggleGroup
                         className='category-filter'
                         type="single"

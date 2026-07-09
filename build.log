@@ -1,0 +1,47 @@
+
+> microcms-next-jamstack-blog@0.1.0 build
+> next build
+
+▲ Next.js 16.2.1 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 21.2s
+  Running TypeScript ...
+  Finished TypeScript in 23.5s ...
+  Collecting page data using 13 workers ...
+  Generating static pages using 13 workers (0/27) ...
+  Generating static pages using 13 workers (6/27) 
+  Generating static pages using 13 workers (13/27) 
+  Generating static pages using 13 workers (20/27) 
+✓ Generating static pages using 13 workers (27/27) in 3.0s
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /admin
+├ ○ /admin/login
+├ ƒ /api/admin/check
+├ ƒ /api/admin/login
+├ ƒ /api/admin/logout
+├ ƒ /api/auth/line/callback
+├ ƒ /api/cron/reminder
+├ ƒ /api/entry
+├ ƒ /api/events
+├ ƒ /api/push
+├ ● /events/[id]
+│ ├ /events/z4wqarys0b
+│ ├ /events/qb8izu5sc5g
+│ ├ /events/3yatk9gx4d
+│ └ [+8 more paths]
+├ ƒ /h2h
+└ ○ /usage
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
