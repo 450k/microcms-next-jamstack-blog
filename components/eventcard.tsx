@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { formatDate, formatDay, formatDateShort } from "@/lib/utils";
+import { formatDate, formatDay, formatDateShort, formatYearMonth } from "@/lib/utils";
 import type { EventListItem } from "@/lib/types";
 import { CategoryBadge } from '@/components/category-badge';
 import { supabase } from '@/lib/supabase';
@@ -33,10 +33,6 @@ import {
 
 import { useState, useEffect } from 'react';
 
-const formatYearMonth = (dateString: string) => {
-    const [year, month] = dateString.split('-');
-    return `${year}-${month}`;
-};
 
 export function EventCard() {
     const [posts, setPosts] = useState<EventListItem[]>([]);

@@ -30,6 +30,11 @@ export const formatDateShort = (date: string) => {
   return toJST(date).format('M/D');
 };
 
+// YYYY-MM 形式（日本時間）
+export const formatYearMonth = (date: string) => {
+  return toJST(date).format('YYYY-MM');
+};
+
 // 曜日
 export const formatDay = (date: string) => {
   return toJST(date).format('ddd');
