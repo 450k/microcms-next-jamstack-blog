@@ -118,5 +118,13 @@ const [eventId, eventTitle, name, eventDate, startTime] = state.split('|');
     }),
   });
 
-  return NextResponse.redirect(new URL(`/events/${eventId}?entry=success`, req.url));
+  const response = NextResponse.redirect(new URL(`/events/${eventId}?entry=success`, req.url));
+  response.cookies.set('line_user_id', lineUserId, {
+    httpOnly: true,
+    path: '/',
+    sameSite: 'lax',
+    maxAge: 60 * 60 * 24 * 30,
+  });
+
+  return response;
 }
