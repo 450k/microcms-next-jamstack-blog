@@ -44,8 +44,9 @@ async function getAdjacentEvents(currentId: string) {
 }
 
 // 記事詳細ページの生成
-export default async function EventPostPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EventPostPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: { entry?: string } }) {
   const { id } = await params; // IDを取得
+  const entrySuccess = searchParams.entry === 'success';
   const post = await getEventPost(id);
   const { prevEvent, nextEvent } = await getAdjacentEvents(id);
 
@@ -55,6 +56,11 @@ export default async function EventPostPage({ params }: { params: Promise<{ id: 
       <Button asChild className="mb-4">
         <Link href="/">← Back to all Events</Link>
       </Button>
+      {entrySuccess && (
+        <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-4 text-green-900">
+          エントリーが完了しました。ご参加お待ちしています。
+        </div>
+      )}
       
       <h1 className="mb-4 text-4xl font-bold">
         {formatDateShort(post.eventDate)} <span className="text-2xl">({formatDay(post.eventDate)})</span>  {post.eventStartTime} ～ {post.eventTitle}
