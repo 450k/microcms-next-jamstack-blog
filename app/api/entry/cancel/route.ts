@@ -12,13 +12,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  const { error, count, data } = await supabase
+  const { error, data } = await supabase
     .from('entries')
     .update({ cancelled: true })
     .eq('id', entryId)
     .eq('line_user_id', lineUserId)
     .eq('cancelled', false)
-    .select('id', { count: 'exact' });
+    .select('id');
 
   if (error) {
     console.error('Entry cancel failed:', error);
