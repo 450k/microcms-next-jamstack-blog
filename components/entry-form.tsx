@@ -25,7 +25,6 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
   const [error, setError] = useState('');
   const [entryCount, setEntryCount] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const startTimeStr = Array.isArray(startTime) ? startTime[0] : startTime;
 
   // 締め切り判定
   const isDeadlinePassed = entryDueDate && dayjs().tz('Asia/Tokyo').isAfter(dayjs(entryDueDate).tz('Asia/Tokyo'));
@@ -47,18 +46,26 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
   const handleLineLogin = () => {
     if (isSubmitting) return;
 
-    if (!name.trim()) {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
       setError('お名前を入力してください');
       return;
     }
 
+    const submissionKey = `entry:${eventId}:${trimmedName}`;
+    if (window.sessionStorage.getItem(submissionKey)) {
+      setError('すでにエントリー処理を開始しています。少し待ってから再度お試しください。');
+      return;
+    }
+
+    window.sessionStorage.setItem(submissionKey, 'pending');
     setIsSubmitting(true);
-    posthog.identify(name.trim(), { name: name.trim() });
+    posthog.identify(trimmedName, { name: trimmedName });
     posthog.capture('entry_line_login_clicked', {
       event_id: eventId,
       event_title: eventTitle,
       event_date: eventDate,
-      participant_name: name.trim(),
+      participant_name: trimmedName,
     });
 
     // LINEログインページにリダイレクト

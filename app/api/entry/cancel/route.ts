@@ -8,17 +8,22 @@ export async function POST(req: NextRequest) {
   }
 
   const lineUserId = req.cookies.get('line_user_id')?.value;
-  if (!lineUserId) {
+  const adminToken = req.cookies.get('admin_token')?.value;
+  const isAdmin = adminToken === process.env.ADMIN_PASSWORD;
+
+  if (!isAdmin && !lineUserId) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
   }
 
-  const { error, data } = await supabase
+  const query = supabase
     .from('entries')
     .update({ cancelled: true })
     .eq('id', entryId)
-    .eq('line_user_id', lineUserId)
-    .eq('cancelled', false)
-    .select('id');
+    .eq('cancelled', false);
+
+  const { error, data } = isAdmin
+    ? await query.select('id')
+    : await query.eq('line_user_id', lineUserId).select('id');
 
   if (error) {
     console.error('Entry cancel failed:', error);
