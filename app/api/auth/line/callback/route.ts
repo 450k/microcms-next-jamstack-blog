@@ -71,16 +71,48 @@ const [eventId, eventTitle, name, eventDate, startTime] = state.split('|');
     }
 
     if (!existingNameEntries?.length) {
-      const { error: insertError } = await supabase.from('entries').insert({
-        event_id: eventId,
-        event_title: eventTitle,
-        name: normalizedName,
-        line_user_id: lineUserId,
-      });
+      const { error: upsertError } = await supabase.from('entries').upsert(
+        {
+          event_id: eventId,
+          event_title: eventTitle,
+          name: normalizedName,
+          line_user_id: lineUserId,
+        },
+        {
+          onConflict: 'event_id,line_user_id',
+          ignoreDuplicates: true,
+        }
+      );
 
-      if (insertError) {
-        console.error('Failed to insert entry:', insertError);
-        return NextResponse.redirect(new URL('/?error=entry-insert-failed', req.url));
+      if (upsertError) {
+        console.error('Failed to upsert entry:', upsertError);
+
+        const { data: recheckEntries, error: recheckError } = await supabase
+          .from('entries')
+          .select('id')
+          .eq('event_id', eventId)
+          .eq('cancelled', false)
+          .eq('line_user_id', lineUserId)
+          .limit(1);
+
+        if (recheckError) {
+          console.error('Failed to recheck entry after upsert error:', recheckError);
+          return NextResponse.redirect(new URL('/?error=entry-insert-failed', req.url));
+        }
+
+        if (!recheckEntries?.length) {
+          const { error: insertError } = await supabase.from('entries').insert({
+            event_id: eventId,
+            event_title: eventTitle,
+            name: normalizedName,
+            line_user_id: lineUserId,
+          });
+
+          if (insertError) {
+            console.error('Failed to insert entry:', insertError);
+            return NextResponse.redirect(new URL('/?error=entry-insert-failed', req.url));
+          }
+        }
       }
     }
   }
