@@ -42,6 +42,13 @@ export function Header() {
                 TOP
               </Link>
               <Link
+                href="/h2h"
+                onClick={() => setIsMenuOpen(false)}
+                className="px-4 py-2 font-medium text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+              >
+                H2H (pb100 vs k450)
+              </Link>
+              <Link
                 href="/usage"
                 onClick={() => setIsMenuOpen(false)}
                 className="px-4 py-2 font-medium text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
@@ -49,11 +56,11 @@ export function Header() {
                 サイトの利用方法
               </Link>
               <Link
-                href="/h2h"
+                href="/admin"
                 onClick={() => setIsMenuOpen(false)}
                 className="px-4 py-2 font-medium text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
               >
-                H2H (pb100 vs k450)
+                管理者ログイン
               </Link>
             </div>
           </div>
