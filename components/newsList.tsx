@@ -17,20 +17,24 @@ export function NewsItems({ newsItems = [] }: Props) {
         お知らせ
       </h3>
       <ul>
-        {newsItems.map((news) => (
-          <li key={news.id} className="mb-2">
-            <div className="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-0">
-              <span className="font-medium">{formatDate(news.publishedAt)}</span>
-              {news.linkTo ? (
-                <a href={"/events/" + news.linkTo} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline self-start">
-                  <span className="font-medium line-clamp-2">{news.newsTitle}</span>
-                </a>
-              ) : (
-                <span className="font-medium line-clamp-2 text-slate-700 self-start">{news.newsTitle}</span>
-              )}
-            </div>
-          </li>
-        ))}
+        {newsItems.map((news) => {
+          const href = news.newsContent ? `/news/${news.id}` : news.linkTo ? `/events/${news.linkTo}` : null;
+
+          return (
+            <li key={news.id} className="mb-2">
+              <div className="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-0">
+                <span className="font-medium">{formatDate(news.publishedAt)}</span>
+                {href ? (
+                  <a href={href} className="text-blue-500 hover:underline self-start">
+                    <span className="font-medium line-clamp-2">{news.newsTitle}</span>
+                  </a>
+                ) : (
+                  <span className="font-medium line-clamp-2 text-slate-700 self-start">{news.newsTitle}</span>
+                )}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
