@@ -20,6 +20,8 @@ export type EventListItem = {
   id: string;
   eventTitle: string;
   eventDate: string;
+  publishedAt?: string;
+  createdAt?: string;
   eventPlace: EventPlace;
   eventStartTime: string[];
   eventHour: string;

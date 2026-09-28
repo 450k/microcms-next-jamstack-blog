@@ -14,7 +14,7 @@ export async function GET() {
     const data = await client.get({
       endpoint: 'event',
       queries: {
-        fields: 'id,eventTitle,eventDate,eventPlace,eventStartTime,eventCategory,eventHour,eventMemberNum,eventCourtNum',
+        fields: 'id,eventTitle,eventDate,publishedAt,createdAt,eventPlace,eventStartTime,eventCategory,eventHour,eventMemberNum,eventCourtNum',
         limit: 100,
         orders: 'eventDate',
       },

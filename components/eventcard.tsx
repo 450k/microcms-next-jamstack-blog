@@ -123,6 +123,18 @@ export function EventCard() {
         return eventDate >= now;
     });
 
+    const isNewEvent = (post: EventListItem) => {
+        const publishedAt = post.publishedAt || post.createdAt;
+        if (!publishedAt) return false;
+
+        const publishedDate = new Date(publishedAt);
+        if (Number.isNaN(publishedDate.getTime())) return false;
+
+        const diffMs = Date.now() - publishedDate.getTime();
+        const threeDaysMs = 3 * 24 * 60 * 60 * 1000;
+        return diffMs >= 0 && diffMs <= threeDaysMs;
+    };
+
     return (
         <div>
             <div className='flex flex-col gap-4 sortButton-container mb-4 md:flex-row md:items-start md:justify-between'>
@@ -193,14 +205,24 @@ export function EventCard() {
             </div>
             <div className='container-event'>
             {visiblePosts.map((post) => {
+                const newEvent = isNewEvent(post);
                 return (
                         <Card key={post.id} className="relative mx-auto w-full max-w-sm pt-0 flex card-item">
                             <div className="absolute inset-0 z-30 aspect-video" />
-                            <img
-                                src={post.eventPlace?.thumbnail_img.url}
-                                alt="Event cover"
-                                className="relative z-20 aspect-video w-full object-cover dark:brightness-40"
-                            />
+                            <div className="relative z-20 overflow-hidden">
+                                {newEvent && (
+                                    <div className="absolute right-2 top-2 z-30">
+                                        <div className="flex h-7 items-center justify-center rounded-[2px] bg-orange-500/80 px-2.5 text-[12px] font-medium tracking-[0.14em] text-white shadow-sm backdrop-blur-[1px]">
+                                            NEW
+                                        </div>
+                                    </div>
+                                )}
+                                <img
+                                    src={post.eventPlace?.thumbnail_img.url}
+                                    alt="Event cover"
+                                    className="aspect-video w-full object-cover dark:brightness-40"
+                                />
+                            </div>
                             <CardHeader>
                                 <CardAction>
                                     <CategoryBadge category={post.eventCategory?.[0]} />
