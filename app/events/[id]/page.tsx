@@ -44,9 +44,10 @@ async function getAdjacentEvents(currentId: string) {
 }
 
 // 記事詳細ページの生成
-export default async function EventPostPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: { entry?: string } }) {
+export default async function EventPostPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ entry?: string }> }) {
   const { id } = await params; // IDを取得
-  const entrySuccess = searchParams.entry === 'success';
+  const { entry } = await searchParams;
+  const entrySuccess = entry === 'success';
   const post = await getEventPost(id);
   const { prevEvent, nextEvent } = await getAdjacentEvents(id);
 
@@ -106,7 +107,7 @@ export default async function EventPostPage({ params, searchParams }: { params: 
         {post.eventContent && (
           <div>
             <h3 className="scroll-m-20 border-b pb-2 text-xl font-semibold tracking-tight first:mt-0">備考</h3>
-            <div className="mb-8"
+            <div className="mb-8 whitespace-pre-wrap [&_p]:my-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-6"
               dangerouslySetInnerHTML={{
                 __html: post.eventContent,
               }}
