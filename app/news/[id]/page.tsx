@@ -30,7 +30,7 @@ export default async function NewsPostPage({
 
       {post.newsContent ? (
         <div
-          className="prose max-w-none"
+          className="prose max-w-none whitespace-pre-wrap [&_p]:my-4 [&_ul]:my-4 [&_ul]:list-disc [&_ul]:space-y-1 [&_ul]:pl-6 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:space-y-1 [&_ol]:pl-6"
           dangerouslySetInnerHTML={{
             __html: post.newsContent,
           }}
