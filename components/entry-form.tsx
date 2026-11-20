@@ -42,6 +42,15 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
     fetchEntryCount();
   }, [eventId]);
 
+  // LINEログインから戻ってきた（結果が出た）ら、二重送信ガードを解除
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('entry')) return;
+    const prefix = `entry:${eventId}:`;
+    Object.keys(window.sessionStorage)
+      .filter((key) => key.startsWith(prefix))
+      .forEach((key) => window.sessionStorage.removeItem(key));
+  }, [eventId]);
+
 
   const handleLineLogin = () => {
     if (isSubmitting) return;
@@ -102,13 +111,13 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
 
   return (
     <div className="flex flex-col gap-3 my-6">
-      <h3 className="text-xl font-semibold">エントリー<span className='font-normal text-sm text-red-500'>（※LINEエントリー）</span></h3>
+      <h3 className="text-xl font-semibold">エントリー<span className='font-normal text-sm text-red-500'>（※LINEのログイン画面が表示されます）</span></h3>
       {error && <p className="text-red-500">{error}</p>}
       <input
         id="name"
         name="name"
         type="text"
-        placeholder="名前を入力　テニスオフID、LINE ID可"
+        placeholder="名前、テニスオフIDなど"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="border rounded p-2"

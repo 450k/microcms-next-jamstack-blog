@@ -6,6 +6,7 @@ import type { EventListItem } from "@/lib/types";
 import { CategoryBadge } from '@/components/category-badge';
 import { supabase } from '@/lib/supabase';
 import posthog from 'posthog-js';
+import dayjs from 'dayjs';
 
 // shad cn のパーツをインポート
 import { Badge } from "@/components/ui/badge"
@@ -108,11 +109,23 @@ export function EventCard() {
         ? monthFilteredPosts.filter(post => post.eventCategory.includes(selectedCategory))
         : monthFilteredPosts;
 
+    // 開始時刻（"7:00" など）を分に変換
+    const toMinutes = (startTime: string[] | string | undefined) => {
+        const value = Array.isArray(startTime) ? startTime[0] : startTime;
+        const [h, m] = (value ?? '').split(':').map(Number);
+        return Number.isNaN(h) ? Number.MAX_SAFE_INTEGER : h * 60 + (m || 0);
+    };
+
+    // 日付順（昇順/降順）→ 同じ日付は開始時刻の早い順
     const sortedPosts = [...categoryFilteredPosts].sort((a, b) => {
-        const dateA = new Date(a.eventDate);
-        const dateB = new Date(b.eventDate);
-        return sortOrder === 'asc' ? dateA.getTime() - dateB.getTime() : dateB.getTime() - dateA.getTime();
+        const diff = new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime();
+        if (diff !== 0) return sortOrder === 'asc' ? diff : -diff;
+        return toMinutes(a.eventStartTime) - toMinutes(b.eventStartTime);
     });
+
+    // 募集期限を過ぎているか
+    const isDeadlinePassed = (post: EventListItem) =>
+        !!post.entryDueDate && dayjs().isAfter(dayjs(post.entryDueDate));
 
     // 現在の日付より前のイベントを除外
     const now = new Date();
@@ -241,7 +254,7 @@ export function EventCard() {
                                     {/* <div className='dataTable-items'>{post.member}</div> */}
                                 </div>
                             </CardDescription>
-                            <CardFooter className='flex justify-between'>
+                            <CardFooter className='flex justify-between mt-auto'>
                                 <Link href={`/events/${post.id}`}>
                                     <Button className="w-full bg-gray-800 hover:bg-gray-600">詳細情報</Button>
                                 </Link>
@@ -250,7 +263,9 @@ export function EventCard() {
                                     const memberCount = entryCounts[post.id] || 0;
                                     const maxMembers = Number(post.eventMemberNum);
                                     const remaining = maxMembers - memberCount;
-                                    return remaining <= 0 ? '✅ 満員御礼!!' : `あと${remaining}名！`;
+                                    if (remaining <= 0) return '✅ 満員御礼!!';
+                                    if (isDeadlinePassed(post)) return '❌ 募集締切';
+                                    return `あと${remaining}名！`;
                                   })()}
                                 </div>
                             </CardFooter>

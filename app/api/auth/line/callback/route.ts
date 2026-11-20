@@ -1,6 +1,7 @@
 // app/api/auth/line/callback/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getPostHogClient } from '@/lib/posthog-server';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -8,6 +9,21 @@ import timezone from 'dayjs/plugin/timezone';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
+
+// 管理者のLINEへプッシュ通知
+async function pushToAdmin(text: string) {
+  await fetch('https://api.line.me/v2/bot/message/push', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${process.env.LINE_ACCESS_TOKEN}`,
+    },
+    body: JSON.stringify({
+      to: process.env.LINE_USER_ID,
+      messages: [{ type: 'text', text }],
+    }),
+  });
+}
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -39,9 +55,53 @@ const [eventId, eventTitle, name, eventDate, startTime] = state.split('|');
     headers: { Authorization: `Bearer ${tokenData.access_token}` },
   });
   const profile = await profileRes.json();
-  const lineUserId = profile.userId;
+  const lineUserId: string | undefined = profile.userId;
+  const displayName: string | undefined = profile.displayName;
+
+  if (!lineUserId) {
+    console.error('Failed to get LINE profile:', profile);
+    return NextResponse.redirect(new URL(`/events/${eventId}?entry=error`, req.url));
+  }
 
   const normalizedName = name.trim();
+
+  // ✅ 登録メンバーかどうかを確認
+  const { data: member, error: memberError } = await getSupabaseAdmin()
+    .from('members')
+    .select('status')
+    .eq('line_user_id', lineUserId)
+    .maybeSingle();
+
+  if (memberError) {
+    console.error('Failed to check member:', memberError);
+    return NextResponse.redirect(new URL(`/events/${eventId}?entry=error`, req.url));
+  }
+
+  if (!member) {
+    // 未登録 → 承認待ちとして登録し、管理者に通知
+    const { error: requestError } = await getSupabaseAdmin().from('members').insert({
+      line_user_id: lineUserId,
+      display_name: displayName ?? null,
+      name: normalizedName,
+      status: 'pending',
+    });
+
+    if (requestError) {
+      console.error('Failed to create member request:', requestError);
+      return NextResponse.redirect(new URL(`/events/${eventId}?entry=error`, req.url));
+    }
+
+    await pushToAdmin(
+      `【メンバー申請】\n名前: ${normalizedName}\nLINE名: ${displayName ?? '-'}\nイベント: ${formattedDate} ${startTime} ～ ${eventTitle}\n管理画面で承認してください。`
+    );
+
+    return NextResponse.redirect(new URL(`/events/${eventId}?entry=pending`, req.url));
+  }
+
+  if (member.status !== 'approved') {
+    const status = member.status === 'rejected' ? 'rejected' : 'pending';
+    return NextResponse.redirect(new URL(`/events/${eventId}?entry=${status}`, req.url));
+  }
 
   const { data: existingEntries, error: existingError } = await supabase
     .from('entries')
@@ -135,20 +195,7 @@ const [eventId, eventTitle, name, eventDate, startTime] = state.split('|');
   });
 
   // ✅ 日本時間の日付を使用
-  await fetch('https://api.line.me/v2/bot/message/push', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.LINE_ACCESS_TOKEN}`,
-    },
-    body: JSON.stringify({
-      to: process.env.LINE_USER_ID,
-      messages: [{
-        type: 'text',
-        text: `【参加申込】\n名前: ${name}\nイベント: ${formattedDate} ${startTime} ～ ${eventTitle}`,
-      }],
-    }),
-  });
+  await pushToAdmin(`【参加申込】\n名前: ${name}\nイベント: ${formattedDate} ${startTime} ～ ${eventTitle}`);
 
   const response = NextResponse.redirect(new URL(`/events/${eventId}?entry=success`, req.url));
   response.cookies.set('line_user_id', lineUserId, {

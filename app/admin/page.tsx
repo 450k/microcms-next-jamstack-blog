@@ -1,6 +1,10 @@
 // app/admin/page.tsx
+import { cookies } from 'next/headers';
 import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { LogoutButton } from '@/components/logout-button';
+import { MemberTable, type Member } from '@/components/member-table';
+import { DeleteOldEntriesForm } from '@/components/delete-old-entries-form';
 
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -11,10 +15,23 @@ dayjs.extend(timezone);
 
 
 export default async function AdminPage() {
+  // cookies() を参照して常に最新データで描画（動的レンダリング）
+  await cookies();
+
   const { data: entries } = await supabase
     .from('entries')
     .select('*')
     .order('created_at', { ascending: false });
+
+  const { data: members } = await getSupabaseAdmin()
+    .from('members')
+    .select('line_user_id, display_name, name, status, created_at')
+    .order('created_at', { ascending: false })
+    .returns<Member[]>();
+
+  const pendingMembers = members?.filter((m) => m.status === 'pending') ?? [];
+  const approvedMembers = members?.filter((m) => m.status === 'approved') ?? [];
+  const rejectedMembers = members?.filter((m) => m.status === 'rejected') ?? [];
 
   const active = entries?.filter((e) => !e.cancelled) ?? [];
   const cancelled = entries?.filter((e) => e.cancelled) ?? [];
@@ -24,6 +41,19 @@ export default async function AdminPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">管理者ダッシュボード</h1>
         <LogoutButton />
+      </div>
+
+      {/* Member Management */}
+      <section id="members" className="flex flex-col gap-6 mb-12">
+        <h2 className="text-2xl font-bold">メンバー管理</h2>
+        <MemberTable title="承認待ち" members={pendingMembers} actions={['approve', 'reject']} />
+        <MemberTable title="登録済み" members={approvedMembers} actions={['delete']} />
+        <MemberTable title="却下" members={rejectedMembers} actions={['approve', 'delete']} />
+      </section>
+
+      {/* Entry Cleanup */}
+      <div className="mb-8">
+        <DeleteOldEntriesForm />
       </div>
 
       <h2 className="text-xl font-semibold mb-4">

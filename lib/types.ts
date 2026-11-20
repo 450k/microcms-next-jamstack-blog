@@ -28,6 +28,7 @@ export type EventListItem = {
   eventMemberNum: string;
   eventCategory: string[];
   eventCourtNum: string[];
+  entryDueDate?: string;
 };
 
 // イベント詳細ページ用の型
