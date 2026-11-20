@@ -117,7 +117,7 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
         id="name"
         name="name"
         type="text"
-        placeholder="名前を入力　テニスオフID、LINE ID可"
+        placeholder="名前、テニスオフIDなど"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="border rounded p-2"
