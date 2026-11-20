@@ -111,7 +111,7 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
 
   return (
     <div className="flex flex-col gap-3 my-6">
-      <h3 className="text-xl font-semibold">エントリー<span className='font-normal text-sm text-red-500'>（※LINEエントリー）</span></h3>
+      <h3 className="text-xl font-semibold">エントリー<span className='font-normal text-sm text-red-500'>（※LINEのログイン画面が表示されます）</span></h3>
       {error && <p className="text-red-500">{error}</p>}
       <input
         id="name"
