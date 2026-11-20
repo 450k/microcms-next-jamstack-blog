@@ -42,6 +42,15 @@ export function EntryForm({ eventId, eventTitle, maxMembers, eventDate, startTim
     fetchEntryCount();
   }, [eventId]);
 
+  // LINEログインから戻ってきた（結果が出た）ら、二重送信ガードを解除
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('entry')) return;
+    const prefix = `entry:${eventId}:`;
+    Object.keys(window.sessionStorage)
+      .filter((key) => key.startsWith(prefix))
+      .forEach((key) => window.sessionStorage.removeItem(key));
+  }, [eventId]);
+
 
   const handleLineLogin = () => {
     if (isSubmitting) return;

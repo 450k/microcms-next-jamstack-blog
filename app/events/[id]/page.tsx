@@ -62,6 +62,21 @@ export default async function EventPostPage({ params, searchParams }: { params: 
           エントリーが完了しました。ご参加お待ちしています。
         </div>
       )}
+      {entry === 'pending' && (
+        <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-900">
+          <p className="m-0">メンバー登録の申請を受け付けました。管理者の承認後、再度エントリーしてください。</p>
+        </div>
+      )}
+      {entry === 'rejected' && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">
+          <p className="m-0">このLINEアカウントではエントリーできません。管理者にお問い合わせください。</p>
+        </div>
+      )}
+      {entry === 'error' && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-red-900">
+          <p className="m-0">エラーが発生しました。時間をおいて再度お試しください。</p>
+        </div>
+      )}
       
       <h1 className="mb-4 text-4xl font-bold">
         {formatDateShort(post.eventDate)} <span className="text-2xl">({formatDay(post.eventDate)})</span>  {post.eventStartTime} ～ {post.eventTitle}
