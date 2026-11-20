@@ -3,6 +3,7 @@
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { processPendingEntries } from '@/lib/auto-entry';
 
 async function assertAdmin() {
   const token = (await cookies()).get('admin_token')?.value;
@@ -21,14 +22,22 @@ function getLineUserId(formData: FormData) {
 
 async function updateStatus(formData: FormData, status: 'approved' | 'rejected') {
   await assertAdmin();
+  const lineUserId = getLineUserId(formData);
   const { error } = await getSupabaseAdmin()
     .from('members')
     .update({ status, updated_at: new Date().toISOString() })
-    .eq('line_user_id', getLineUserId(formData));
+    .eq('line_user_id', lineUserId);
 
   if (error) {
     console.error(`Failed to set member status to ${status}:`, error);
     throw new Error('メンバーの更新に失敗しました');
+  }
+
+  if (status === 'approved') {
+    // 申請中だったイベントへ自動エントリー
+    await processPendingEntries(lineUserId);
+  } else {
+    await getSupabaseAdmin().from('pending_entries').delete().eq('line_user_id', lineUserId);
   }
   revalidatePath('/admin');
 }

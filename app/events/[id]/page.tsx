@@ -64,7 +64,7 @@ export default async function EventPostPage({ params, searchParams }: { params: 
       )}
       {entry === 'pending' && (
         <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-900">
-          <p className="m-0">メンバー登録の申請を受け付けました。管理者の承認後、再度エントリーしてください。</p>
+          <p className="m-0">メンバー登録の申請を受け付けました。管理者が承認すると、このイベントに自動でエントリーされます。</p>
         </div>
       )}
       {entry === 'rejected' && (

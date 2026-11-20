@@ -15,6 +15,7 @@ export type Member = {
   name: string | null;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
+  requested_events?: string[];
 };
 
 type Action = 'approve' | 'reject' | 'delete';
@@ -23,6 +24,7 @@ type Props = {
   title: string;
   members: Member[];
   actions: Action[];
+  showRequests?: boolean;
 };
 
 const actionConfig = {
@@ -31,7 +33,7 @@ const actionConfig = {
   delete: { label: '削除', action: deleteMember, variant: 'destructive', confirm: 'このメンバーを削除しますか？\n（次回エントリー時に再び承認待ちになります）' },
 } as const;
 
-export function MemberTable({ title, members, actions }: Props) {
+export function MemberTable({ title, members, actions, showRequests = false }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="m-0 text-xl font-semibold">{title}（{members.length}名）</h3>
@@ -43,6 +45,7 @@ export function MemberTable({ title, members, actions }: Props) {
             <tr className="bg-gray-100">
               <th className="border p-2 text-left">名前</th>
               <th className="border p-2 text-left">LINE名</th>
+              {showRequests && <th className="border p-2 text-left">申請イベント</th>}
               <th className="border p-2 text-left">申請日時</th>
               <th className="border p-2 text-left">操作</th>
             </tr>
@@ -52,6 +55,15 @@ export function MemberTable({ title, members, actions }: Props) {
               <tr key={member.line_user_id}>
                 <td className="border p-2">{member.name ?? '-'}</td>
                 <td className="border p-2">{member.display_name ?? '-'}</td>
+                {showRequests && (
+                  <td className="border p-2">
+                    {member.requested_events?.length ? (
+                      <ul className="m-0 p-0 list-none">
+                        {member.requested_events.map((title, i) => <li key={i}>{title}</li>)}
+                      </ul>
+                    ) : '-'}
+                  </td>
+                )}
                 <td className="border p-2">{dayjs(member.created_at).tz('Asia/Tokyo').format('YYYY/MM/DD HH:mm')}</td>
                 <td className="border p-2">
                   <div className="flex gap-2">

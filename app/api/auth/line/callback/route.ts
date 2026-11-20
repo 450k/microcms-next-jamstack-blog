@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getSupabaseAdmin } from '@/lib/supabase-admin';
 import { getPostHogClient } from '@/lib/posthog-server';
+import { pushToAdmin } from '@/lib/line';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -10,19 +11,16 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-// 管理者のLINEへプッシュ通知
-async function pushToAdmin(text: string) {
-  await fetch('https://api.line.me/v2/bot/message/push', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${process.env.LINE_ACCESS_TOKEN}`,
-    },
-    body: JSON.stringify({
-      to: process.env.LINE_USER_ID,
-      messages: [{ type: 'text', text }],
-    }),
-  });
+// 承認待ちの間に申し込んだイベントを保存（承認時に自動エントリー）
+async function savePendingEntry(lineUserId: string, eventId: string, eventTitle: string, name: string) {
+  const { error } = await getSupabaseAdmin()
+    .from('pending_entries')
+    .upsert(
+      { line_user_id: lineUserId, event_id: eventId, event_title: eventTitle, name },
+      { onConflict: 'line_user_id,event_id' }
+    );
+  if (error) console.error('Failed to save pending entry:', error);
+  return !error;
 }
 
 export async function GET(req: NextRequest) {
@@ -91,6 +89,10 @@ const [eventId, eventTitle, name, eventDate, startTime] = state.split('|');
       return NextResponse.redirect(new URL(`/events/${eventId}?entry=error`, req.url));
     }
 
+    if (!(await savePendingEntry(lineUserId, eventId, eventTitle, normalizedName))) {
+      return NextResponse.redirect(new URL(`/events/${eventId}?entry=error`, req.url));
+    }
+
     await pushToAdmin(
       `【メンバー申請】\n名前: ${normalizedName}\nLINE名: ${displayName ?? '-'}\nイベント: ${formattedDate} ${startTime} ～ ${eventTitle}\n管理画面で承認してください。`
     );
@@ -98,9 +100,16 @@ const [eventId, eventTitle, name, eventDate, startTime] = state.split('|');
     return NextResponse.redirect(new URL(`/events/${eventId}?entry=pending`, req.url));
   }
 
+  if (member.status === 'rejected') {
+    return NextResponse.redirect(new URL(`/events/${eventId}?entry=rejected`, req.url));
+  }
+
   if (member.status !== 'approved') {
-    const status = member.status === 'rejected' ? 'rejected' : 'pending';
-    return NextResponse.redirect(new URL(`/events/${eventId}?entry=${status}`, req.url));
+    // 承認待ち中に別のイベントにも申し込んだ場合も保存しておく
+    if (!(await savePendingEntry(lineUserId, eventId, eventTitle, normalizedName))) {
+      return NextResponse.redirect(new URL(`/events/${eventId}?entry=error`, req.url));
+    }
+    return NextResponse.redirect(new URL(`/events/${eventId}?entry=pending`, req.url));
   }
 
   const { data: existingEntries, error: existingError } = await supabase
